@@ -11,12 +11,18 @@ library(tidyverse)
 library(lubridate)
 library(tibble)
 library(zoo)
+library(readr)
 
 ```
 
 ```{r load data}
-# Filtered three observations of one submission of another topic
-data <- read.csv("data.csv")
+# Unzip folder and load data
+zip_folder <- "data.zip"
+file_to_extract <- "data.csv"
+destination_path <- "./"  # Specify the desired destination path
+
+unzip(zip_folder, files = file_to_extract, exdir = destination_path)
+data <- read_csv("data.csv")
 
 ```
 
