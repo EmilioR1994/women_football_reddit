@@ -1,0 +1,423 @@
+---
+title: "C_DiD"
+author: "Emilio Robleda"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(lubridate)
+library(rvg)
+library(plm)
+library(did)
+
+```
+
+
+```{r load raw data}
+did_data <- read.csv("subreddit_stats.csv")
+
+```
+
+## Design 1: Event study
+### Data
+
+```{r Data for DiD Design 1}
+# Assuming "subreddit_month" is the name of your data frame
+did_data <- did_data %>%
+  mutate(date = parse_date_time(month, "b Y"))
+
+# Drop observations before June 2021 and after May 2023
+did1_data <- did_data %>%
+  filter(date >= as.Date("2021-08-01") & date <= as.Date("2023-05-31"))
+
+# Get a list of the unique subreddits
+unique_subreddits <- did1_data %>%
+  distinct(subreddit) %>%
+  pull(subreddit)
+
+# Assign a unique subreddit_id to each unique subreddit
+subreddit_ids <- seq_len(length(unique_subreddits))
+
+# Get a list of the unique months
+unique_month <- did1_data %>%
+  arrange((date)) %>%
+  distinct(month) %>%
+  pull(month)
+
+# Assign a unique subreddit_id to each unique subreddit
+month_ids <- seq_len(length(unique_month))
+
+# Create a new variable called subreddit_id
+did1_data <- did1_data %>%
+  arrange((date)) %>%
+  mutate(subreddit_id = subreddit_ids[match(subreddit, unique_subreddits)],
+         period = month_ids[match(month, unique_month)])
+
+# Print the DataFrame
+print(did1_data)
+
+```
+
+### Model 1.1. Avg. Post Score as Outcome Variable
+
+```{r Design 1; Avg Post Score}
+## DiD with "Average Post Score" as outcome variable
+pscore_did1 = lm(avg_post_score ~ g + t + z, data = did1_data)
+summary(pscore_did1)
+pscore_did1_coef <- pscore_did1$coefficients[4]
+
+## Alternatively 1: run this code
+#### reg_pscore_did1 = lm(avg_post_score ~ g*t, data = did1_data)
+## the two regs should be equal with g:t == z
+#### coef <- reg_posts_did1$coefficients[4]
+## Alternatively I can run this code
+####pscore_did <- att_gt(yname = "avg_post_score", 
+####                     gname = "g", 
+####                     idname = "subreddit_id", 
+####                     tname = "t", 
+####                     data = did1_data,
+####                     allow_unbalanced_panel = T)
+####summary(pscore_did)
+####coef <- pscore_did$att
+
+values_pscore1 <- did1_data %>%
+  group_by(g, t) %>%
+  summarise(avg_post_score = mean(avg_post_score)) %>%
+  mutate(counterfactual = 0) %>%
+  as.data.frame()
+
+# Add new observation
+new_obs <- data.frame(g = 1,
+                      t = 1,
+                      avg_post_score = mean(did1_data$avg_post_score[did1_data$g == 1 & did1_data$t == 1]) - pscore_did1_coef,
+                      counterfactual = 1)
+new_obs2 <- data.frame(g = 1,
+                      t = 0,
+                      avg_post_score = mean(did1_data$avg_post_score[did1_data$g == 1 & did1_data$t == 0]),
+                      counterfactual = 1)
+values_pscore1 <- values_pscore1 %>% 
+  add_row(new_obs) %>%
+  add_row(new_obs2)
+
+# Print data
+print(values_pscore1)
+```
+
+### Plot 1.1
+
+```{r DiD 1.1 plot}
+pscore_1 <- ggplot(values_pscore1, aes(x = t, y = avg_post_score, group = g)) +
+  geom_line(aes(color = factor(g)), linewidth = 1.2, 
+            data = subset(values_pscore1, counterfactual == 0)) +
+  geom_line(aes(color = factor(g)), linewidth = 1, linetype = "dashed", 
+            data = subset(values_pscore1, counterfactual == 1)) +
+  geom_line(data = subset(values_pscore1, g ==1 & t == 1), 
+            linewidth = 1, linetype = "dotted") +
+  geom_point(aes(color = factor(g)), size = 3) +
+  labs(title = "Estimating the Causal Impact in Average Post Scores",
+       subtitle = "Two Periods Differences in Differences Plot",
+       x = "Period",
+       y = "Average Post Score") +
+  theme_minimal() +
+  geom_text(data = subset(values_pscore1, counterfactual == 0 & g == 1 & t == 0), 
+            aes(x = min(t), y = min(avg_post_score) + 0.1, 
+                label = "Treatment Group", color = factor(g)), 
+            size = 4, vjust = -1.5, hjust = 0) +
+  geom_text(data = subset(values_pscore1, counterfactual == 0 & g == 0 & t == 0), 
+            aes(x = min(t), y = min(avg_post_score) + 0.1, 
+                label = "Control Group", color = factor(g)), 
+            size = 4, vjust = -1.5, hjust = 0) +
+  geom_text(data = subset(values_pscore1, counterfactual == 1), 
+            aes(x = median(t), y = max(avg_post_score) + 0.1, 
+                label = "Counterfactual under PTA", color = factor(g)), 
+            size = 4, vjust = 5) +
+  geom_text(data = subset(values_pscore1, g == 1 & t == 1), 
+            aes(x = max(t), y = max(avg_post_score) + 0.1, 
+                label = paste0("ATT = ", round(pscore_did1_coef,2)), color = "black"), 
+            size = 4, vjust = 5, hjust = 1.1) +
+  scale_x_continuous(breaks = c(0, 1), limits = c(0, 1)) +
+  scale_color_manual(values = c("darkred", "darkblue", "black")) +
+  theme(panel.grid.minor = element_blank(),
+        legend.position = "none")
+
+pscore_1
+
+```
+
+### Model 1.2. Avg. Comments per Post as Outcome Variable
+
+```{r Design 1; Avg Comments per Post}
+## DiD with "Average Comments per Post" as outcome variable
+avgcom_did1 = lm(avg_com ~ g + t + z, data = did1_data)
+summary(avgcom_did1)
+avgcom_did1_coef <- avgcom_did1$coefficients[4]
+
+values_avgcom1 <- did1_data %>%
+  group_by(g, t) %>%
+  summarise(avg_com = mean(avg_com)) %>%
+  mutate(counterfactual = 0) %>%
+  as.data.frame()
+
+# Add new observation
+new_obs <- data.frame(g = 1,
+                      t = 1,
+                      avg_com = mean(did1_data$avg_com[did1_data$g == 1 & did1_data$t == 1]) - avgcom_did1_coef,
+                      counterfactual = 1)
+new_obs2 <- data.frame(g = 1,
+                      t = 0,
+                      avg_com = mean(did1_data$avg_com[did1_data$g == 1 & did1_data$t == 0]),
+                      counterfactual = 1)
+values_avgcom1 <- values_avgcom1 %>% 
+  add_row(new_obs) %>%
+  add_row(new_obs2)
+
+# Print data
+print(values_avgcom1)
+```
+
+### Plot 1.2
+
+```{r DiD 1.2 plot}
+avgcom_1 <- ggplot(values_avgcom1, aes(x = t, y = avg_com, group = g)) +
+  geom_line(aes(color = factor(g)), linewidth = 1.2, 
+            data = subset(values_avgcom1, counterfactual == 0)) +
+  geom_line(aes(color = factor(g)), linewidth = 1, linetype = "dashed", 
+            data = subset(values_avgcom1, counterfactual == 1)) +
+  geom_line(data = subset(values_avgcom1, g ==1 & t == 1), 
+            linewidth = 1, linetype = "dotted") +
+  geom_point(aes(color = factor(g)), size = 3) +
+  labs(title = "Estimating the Causal Impact in Average Comments per Post",
+       subtitle = "Two Periods Differences in Differences Plot",
+       x = "Period",
+       y = "Average Comments per Post") +
+  theme_minimal() +
+  geom_text(data = subset(values_avgcom1, counterfactual == 0 & g == 1 & t == 0), 
+            aes(x = min(t), y = min(avg_com) - 0.05, 
+                label = "Treatment Group", color = factor(g)), 
+            size = 4, vjust = -1.5, hjust = 0) +
+  geom_text(data = subset(values_avgcom1, counterfactual == 0 & g == 0 & t == 0), 
+            aes(x = min(t), y = min(avg_com) + 0.1, 
+                label = "Control Group", color = factor(g)), 
+            size = 4, vjust = -1.5, hjust = 0) +
+  geom_text(data = subset(values_avgcom1, counterfactual == 1), 
+            aes(x = median(t), y = max(avg_com) - 0.1, 
+                label = "Counterfactual under PTA", color = factor(g)), 
+            size = 4, vjust = 5) +
+  geom_text(data = subset(values_avgcom1, g == 1 & t == 1), 
+            aes(x = max(t), y = max(avg_com) + 0.1, 
+                label = paste0("ATT = ", round(avgcom_did1_coef,2)), color = "black"), 
+            size = 4, vjust = 5, hjust = 1.1) +
+  scale_x_continuous(breaks = c(0, 1), limits = c(0, 1)) +
+  scale_color_manual(values = c("darkred", "darkblue", "black")) +
+  theme(panel.grid.minor = element_blank(),
+        legend.position = "none")
+
+avgcom_1
+
+```
+
+## Design 2: Seasonal study
+### Data
+
+```{r}
+# Assuming "subreddit_month" is the name of your data frame
+did_data <- did_data %>%
+  mutate(date = parse_date_time(month, "b Y"))
+
+# Drop observations before June 2021 and after May 2023
+did2_data <- did_data %>%
+  filter(date >= as.Date("2020-08-01") & date <= as.Date("2023-05-31"))
+
+# Get a list of the unique subreddits
+unique_subreddits <- did2_data %>%
+  distinct(subreddit) %>%
+  pull(subreddit)
+
+# Assign a unique subreddit_id to each unique subreddit
+subreddit_ids <- seq_len(length(unique_subreddits))
+
+# Get a list of the unique months
+unique_month <- did2_data %>%
+  arrange((date)) %>%
+  distinct(month) %>%
+  pull(month)
+
+# Assign a unique subreddit_id to each unique subreddit
+month_ids <- seq_len(length(unique_month))
+
+# Create a new variable called subreddit_id
+did2_data <- did2_data %>%
+  arrange((date)) %>%
+  mutate(subreddit_id = subreddit_ids[match(subreddit, unique_subreddits)],
+         period = month_ids[match(month, unique_month)])
+
+did2_data <- did2_data %>%
+  select(subreddit, subreddit_id, date, period, g, t, z, avg_com, avg_post_score)
+
+did2_data
+
+# Load required library
+library(writexl)
+
+# Assuming your original dataset is named did2_data
+# Replace "your_export_path" with the desired file path for the Excel file
+write_xlsx(did2_data, path = "did2.xlsx")
+
+```
+
+```{r}
+# Load clean data
+library(readxl)
+did2 <- read_excel("did2_clean.xlsx")
+did2
+
+```
+
+### Model 2.1. Avg. Post Score as Outcome Variable
+
+```{r}
+## DiD with "Average Post Score" as outcome variable
+pscore_did2 = lm(change_avg_post_score ~ g + t + z, data = did2)
+summary(pscore_did2)
+pscore_did2_coef <- pscore_did2$coefficients[4]
+
+values_pscore2 <- did2 %>%
+  group_by(g, t) %>%
+  summarise(change_avg_post_score = mean(change_avg_post_score)) %>%
+  mutate(counterfactual = 0) %>%
+  as.data.frame()
+
+# Add new observation
+new_obs <- data.frame(g = 1,
+                      t = 1,
+                      change_avg_post_score = mean(did2$change_avg_post_score[did2$g == 1 & did2$t == 1]) - pscore_did2_coef,
+                      counterfactual = 1)
+new_obs2 <- data.frame(g = 1,
+                      t = 0,
+                      change_avg_post_score = mean(did2$change_avg_post_score[did2$g == 1 & did2$t == 0]),
+                      counterfactual = 1)
+values_pscore2 <- values_pscore2 %>% 
+  add_row(new_obs) %>%
+  add_row(new_obs2)
+
+# Print data
+print(values_pscore2)
+
+```
+
+### Plot 2.1 
+
+```{r}
+pscore_2 <- ggplot(values_pscore2, aes(x = t, y = change_avg_post_score, group = g)) +
+  geom_line(aes(color = factor(g)), linewidth = 1.2, 
+            data = subset(values_pscore2, counterfactual == 0)) +
+  geom_line(aes(color = factor(g)), linewidth = 1, linetype = "dashed", 
+            data = subset(values_pscore2, counterfactual == 1)) +
+  geom_line(data = subset(values_pscore2, g ==1 & t == 1), 
+            linewidth = 1, linetype = "dotted") +
+  geom_point(aes(color = factor(g)), size = 3) +
+  labs(title = "Estimating the Causal Impact in Average Post Scores",
+       subtitle = "Two Periods Differences in Differences Plot",
+       x = "Period",
+       y = "YoY Change in Average Post Score") +
+  theme_minimal() +
+  geom_text(data = subset(values_pscore2, counterfactual == 0 & g == 1 & t == 0), 
+            aes(x = min(t), y = min(change_avg_post_score) - 20, 
+                label = "Treatment Group", color = factor(g)), 
+            size = 4, vjust = -1.5, hjust = 0) +
+  geom_text(data = subset(values_pscore2, counterfactual == 0 & g == 0 & t == 0), 
+            aes(x = min(t), y = min(change_avg_post_score) + 0.1, 
+                label = "Control Group", color = factor(g)), 
+            size = 4, vjust = -1.5, hjust = 0) +
+  geom_text(data = subset(values_pscore2, counterfactual == 1), 
+            aes(x = median(t), y = max(change_avg_post_score) - 0.5, 
+                label = "Counterfactual under PTA", color = factor(g)), 
+            size = 4, vjust = 5) +
+  geom_text(data = subset(values_pscore2, g == 1 & t == 1), 
+            aes(x = max(t), y = max(change_avg_post_score) + 0.1, 
+                label = paste0("ATT = ", round(pscore_did2_coef,2)), color = "black"), 
+            size = 4, vjust = 5, hjust = 1.1) +
+  scale_x_continuous(breaks = c(0, 1), limits = c(0, 1)) +
+  scale_color_manual(values = c("darkred", "darkblue", "black")) +
+  theme(panel.grid.minor = element_blank(),
+        legend.position = "none")
+
+pscore_2
+
+```
+
+### Model 2.2. Average Comments per Post as Outcome Variable
+
+```{r}
+## DiD with "Average Comments per Post" as outcome variable
+avgcom_did2 = lm(change_avg_com ~ g + t + z, data = did2)
+summary(avgcom_did2)
+avgcom_did2_coef <- avgcom_did2$coefficients[4]
+
+values_avgcom2 <- did2 %>%
+  group_by(g, t) %>%
+  summarise(change_avg_com = mean(change_avg_com)) %>%
+  mutate(counterfactual = 0) %>%
+  as.data.frame()
+
+# Add new observation
+new_obs <- data.frame(g = 1,
+                      t = 1,
+                      change_avg_com = mean(did2$change_avg_com[did2$g == 1 & did2$t == 1]) - avgcom_did2_coef,
+                      counterfactual = 1)
+new_obs2 <- data.frame(g = 1,
+                      t = 0,
+                      change_avg_com = mean(did2$change_avg_com[did2$g == 1 & did2$t == 0]),
+                      counterfactual = 1)
+values_avgcom2 <- values_avgcom2 %>% 
+  add_row(new_obs) %>%
+  add_row(new_obs2)
+
+# Print data
+print(values_avgcom2)
+
+```
+
+### Plot 2.2
+
+```{r DiD 2.2 plot}
+avgcom_2 <- ggplot(values_avgcom2, aes(x = t, y = change_avg_com, group = g)) +
+  geom_line(aes(color = factor(g)), linewidth = 1.2, 
+            data = subset(values_avgcom2, counterfactual == 0)) +
+  geom_line(aes(color = factor(g)), linewidth = 1, linetype = "dashed", 
+            data = subset(values_avgcom2, counterfactual == 1)) +
+  geom_line(data = subset(values_avgcom2, g ==1 & t == 1), 
+            linewidth = 1, linetype = "dotted") +
+  geom_point(aes(color = factor(g)), size = 3) +
+  labs(title = "Estimating the Causal Impact in Average Comments per Post",
+       subtitle = "Two Periods Differences in Differences Plot",
+       x = "Period",
+       y = "YoY Change in Average Comments per Post") +
+  theme_minimal() +
+  geom_text(data = subset(values_avgcom2, counterfactual == 0 & g == 1 & t == 0), 
+            aes(x = min(t), y = min(change_avg_com) - 1, 
+                label = "Treatment Group", color = factor(g)), 
+            size = 4, vjust = -1.5, hjust = 0) +
+  geom_text(data = subset(values_avgcom2, counterfactual == 0 & g == 0 & t == 0), 
+            aes(x = min(t), y = min(change_avg_com) + 0.1, 
+                label = "Control Group", color = factor(g)), 
+            size = 4, vjust = -1.5, hjust = 0) +
+  geom_text(data = subset(values_avgcom2, counterfactual == 1), 
+            aes(x = median(t), y = max(change_avg_com) - 0.5, 
+                label = "Counterfactual under PTA", color = factor(g)), 
+            size = 4, vjust = 5) +
+  geom_text(data = subset(values_avgcom2, g == 1 & t == 1), 
+            aes(x = max(t), y = max(change_avg_com) + 0.1, 
+                label = paste0("ATT = ", round(avgcom_did2_coef,2)), color = "black"), 
+            size = 4, vjust = 5, hjust = 1.1) +
+  scale_x_continuous(breaks = c(0, 1), limits = c(0, 1)) +
+  scale_color_manual(values = c("darkred", "darkblue", "black")) +
+  theme(panel.grid.minor = element_blank(),
+        legend.position = "none")
+
+avgcom_2
+
+```
+

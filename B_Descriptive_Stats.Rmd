@@ -1,0 +1,2150 @@
+---
+title: "B_Descriptive_Stats"
+author: "Emilio Robleda"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(lubridate)
+library(rvg)
+library(readxl)
+
+```
+
+
+```{r load raw data}
+interest_time <- read_excel("graph1_interest_in_time.xlsx")
+interest_age <- read_excel("graph2_interest_by_age.xlsx")
+subreddit_month <- read.csv("subreddit_stats.csv")
+interest_age
+
+```
+
+
+```{r filter time period}
+# Assuming "subreddit_month" is the name of your data frame
+subreddit_month <- subreddit_month %>%
+  mutate(date = parse_date_time(month, "b Y"))
+
+```
+
+
+```{r filter time period}
+# Drop observations before August 2020 and after May 2023
+data <- subreddit_month %>%
+  filter(date >= as.Date("2020-06-01") & date <= as.Date("2023-05-31"))
+
+```
+
+## Descriptive Stats at a Subreddit (Group Cluster) Level
+
+Plot: Number of Posts
+
+```{r plot: Posts per Subreddit}
+# Create specific database for plot
+sub_posts_data <- data %>%
+  group_by(subreddit, g) %>%
+  summarise(posts_sum = sum(posts), .groups = "drop") %>%
+  arrange(desc(posts_sum))
+
+# Create plot
+sub_posts <- ggplot(sub_posts_data, aes(x = reorder(subreddit, -posts_sum), y = posts_sum, fill = factor(g))) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("0" = "gray80", "1" = "gray20"), name = "Subreddit Group") +
+  theme_minimal() +
+  labs(title = "Number of Posts",
+       caption = "Period of analysis: June 2020 - May 2023",
+       x = "Subreddit",
+       y = "Number of Posts") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "top",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = posts_sum), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+
+# Display plot
+sub_posts
+
+```
+
+Plot: Number of Observations (months in which at least one women's football post was submitted)
+
+```{r plot: observations per subreddit}
+# Create specific database for plot
+sub_obs_data <- data %>%
+  group_by(subreddit, g) %>%
+  summarise(posts_count = n(), .groups = "drop") %>%
+  arrange(desc(posts_count))
+
+# Create plot
+sub_obs <- ggplot(sub_obs_data, aes(x = reorder(subreddit, -posts_count), y = posts_count, fill = factor(g))) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("0" = "gray80", "1" = "gray20"), name = "Subreddit Group") +
+  theme_minimal() +
+  labs(title = "Number of Observations",
+       subtitle = "36 month period",
+       caption = "Period of analysis: June 2020 - May 2023",
+       x = "Subreddit",
+       y = "Number of Observations") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "top",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = posts_count), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.11)))
+
+# Display plot
+sub_obs
+
+```
+
+Plot: Number of Comments
+
+```{r plot: comments per subreddit}
+# Create specific database for plot
+sub_com_data <- data %>%
+  group_by(subreddit, g) %>%
+  summarise(com_sum = sum(comments), .groups = "drop") %>%
+  arrange(desc(com_sum))
+
+# Create plot
+sub_com <- ggplot(sub_com_data, aes(x = reorder(subreddit, -com_sum), y = com_sum, fill = factor(g))) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("0" = "gray80", "1" = "gray20"), name = "Subreddit Group") +
+  theme_minimal() +
+  labs(title = "Number of Comments",
+       caption = "Period of analysis: June 2020 - May 2023",
+       x = "Subreddit",
+       y = "Number of Comments") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "top",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = com_sum), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+
+# Display plot
+sub_com
+
+```
+
+Plot: Average Characters per Comment
+
+```{r plot: avg. chars per subreddit}
+# Create specific database for plot
+sub_char_data <- data %>%
+  group_by(subreddit, g) %>%
+  summarise(avg_char = round(mean(avg_chars),0), .groups = "drop") %>%
+  arrange(desc(avg_char))
+
+# Create plot
+sub_char <- ggplot(sub_char_data, aes(x = reorder(subreddit, -avg_char), y = avg_char, fill = factor(g))) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("0" = "gray80", "1" = "gray20"), name = "Subreddit Group") +
+  theme_minimal() +
+  labs(title = "Average Characters per Comment",
+       caption = "Period of analysis: June 2020 - May 2023",
+       x = "Subreddit",
+       y = "Average Characters per Comment") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "top",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_char), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+
+# Display plot
+sub_char
+
+```
+
+Plot: Average Comment Score
+
+```{r plot: avg. comment score per subreddit}
+# Create specific database for plot
+sub_score_data <- data %>%
+  group_by(subreddit, g) %>%
+  summarise(avg_score = round(mean(avg_score),0), .groups = "drop") %>%
+  arrange(desc(avg_score))
+
+# Create plot
+sub_score <- ggplot(sub_score_data, aes(x = reorder(subreddit, -avg_score), y = avg_score, fill = factor(g))) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("0" = "gray80", "1" = "gray20"), name = "Subreddit Group") +
+  theme_minimal() +
+  labs(title = "Average Comment Score",
+       caption = "Period of analysis: June 2020 - May 2023",
+       x = "Subreddit",
+       y = "Average Score per Comment") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "top",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+
+# Display plot
+sub_score
+
+```
+
+Plot: Average Post Score
+
+```{r plot: avg. post score per subreddit}
+# Create specific database for plot
+sub_posts_score_data <- data %>%
+  group_by(subreddit, g) %>%
+  summarise(avg_posts_score = round(mean(avg_post_score),0), .groups = "drop") %>%
+  arrange(desc(avg_posts_score))
+
+# Create plot
+sub_posts_score <- ggplot(sub_posts_score_data, aes(x = reorder(subreddit, -avg_posts_score),
+                                                    y = avg_posts_score, fill = factor(g))) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("0" = "gray80", "1" = "gray20"), name = "Subreddit Group") +
+  theme_minimal() +
+  labs(title = "Average Post Score",
+       caption = "Period of analysis: June 2020 - May 2023",
+       x = "Subreddit",
+       y = "Average Score per Post") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "top",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_posts_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+
+# Display plot
+sub_posts_score
+
+```
+
+Plot: Moderated Comments Proportion
+
+```{r plot: avg. chars per subreddit}
+# Create specific database for plot
+sub_mod_data <- data %>%
+  group_by(subreddit, g) %>%
+  summarise(avg_mod_prop = round(mean(mod_prop)*100,0), .groups = "drop") %>%
+  arrange(desc(avg_mod_prop))
+
+# Create plot
+sub_mod <- ggplot(sub_mod_data, aes(x = reorder(subreddit, -avg_mod_prop), y = avg_mod_prop, fill = factor(g))) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("0" = "gray80", "1" = "gray20"), name = "Subreddit Group") +
+  theme_minimal() +
+  labs(title = "Moderated Comments Proportion",
+       caption = "Period of analysis: June 2020 - May 2023",
+       x = "Subreddit",
+       y = "Moderated Comments Proportion, in %") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "top",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_mod_prop), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+
+# Display plot
+sub_mod
+
+```
+
+## Descriptive Stats per Subreddit: pre and post Euro 2022 
+
+### Gunners
+
+```{r}
+# Gunners
+Gunners <- data %>%
+  filter(subreddit == "Gunners")
+
+# Convert "month" to a factor with the desired order
+Gunners$month <- factor(Gunners$month, levels = unique(Gunners$month))
+
+# Create the bar plot for posts per month
+Gunners_posts <- ggplot(data = Gunners, aes(x = month, y = posts, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Posts",
+       subtitle = "Gunners Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Posts",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = posts), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Gunners_posts
+
+# Create the bar plot for comments per month
+Gunners_com <- ggplot(data = Gunners, aes(x = month, y = comments, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Comments",
+       subtitle = "Gunners Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Comments",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = comments), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Gunners_com
+
+# Create the bar plot for average comments per post per month
+Gunners_avgcom <- ggplot(data = Gunners, aes(x = month, y = avg_com, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Comments per Post",
+       subtitle = "Gunners Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Comments per Post",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_com), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Gunners_avgcom
+
+# Create the bar plot for average post score
+Gunners_pscore <- ggplot(data = Gunners, aes(x = month, y = avg_post_score, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Post Score",
+       subtitle = "Gunners Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Post Score",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_post_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Gunners_pscore
+
+```
+
+### reddevils
+
+```{r}
+# reddevils
+reddevils <- data %>%
+  filter(subreddit == "reddevils")
+
+# Convert "month" to a factor with the desired order
+reddevils$month <- factor(reddevils$month, levels = unique(reddevils$month))
+
+# Create the bar plot for posts per month
+reddevils_posts <- ggplot(data = reddevils, aes(x = month, y = posts, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Posts",
+       subtitle = "reddevils Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Posts",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = posts), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+reddevils_posts
+
+# Create the bar plot for comments per month
+reddevils_com <- ggplot(data = reddevils, aes(x = month, y = comments, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Comments",
+       subtitle = "reddevils Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Comments",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = comments), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+reddevils_com
+
+# Create the bar plot for average comments per post per month
+reddevils_avgcom <- ggplot(data = reddevils, aes(x = month, y = avg_com, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Comments per Post",
+       subtitle = "reddevils Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Comments per Post",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_com), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+reddevils_avgcom
+
+# Create the bar plot for average post score
+reddevils_pscore <- ggplot(data = reddevils, aes(x = month, y = avg_post_score, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Post Score",
+       subtitle = "reddevils Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Post Score",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_post_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+reddevils_pscore
+
+```
+
+### Barca
+
+```{r}
+# Barca
+Barca <- data %>%
+  filter(subreddit == "Barca")
+
+# Convert "month" to a factor with the desired order
+Barca$month <- factor(Barca$month, levels = unique(Barca$month))
+
+# Create the bar plot for posts per month
+Barca_posts <- ggplot(data = Barca, aes(x = month, y = posts, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Posts",
+       subtitle = "Barca Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Posts",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = posts), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Barca_posts
+
+# Create the bar plot for comments per month
+Barca_com <- ggplot(data = Barca, aes(x = month, y = comments, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Comments",
+       subtitle = "Barca Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Comments",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = comments), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Barca_com
+
+# Create the bar plot for average comments per post per month
+Barca_avgcom <- ggplot(data = Barca, aes(x = month, y = avg_com, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Comments per Post",
+       subtitle = "Barca Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Comments per Post",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_com), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Barca_avgcom
+
+# Create the bar plot for average post score
+Barca_pscore <- ggplot(data = Barca, aes(x = month, y = avg_post_score, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Post Score",
+       subtitle = "Barca Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Post Score",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_post_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Barca_pscore
+
+```
+
+### coys
+
+```{r}
+# coys
+coys <- data %>%
+  filter(subreddit == "coys")
+
+# Convert "month" to a factor with the desired order
+coys$month <- factor(coys$month, levels = unique(coys$month))
+
+# Create the bar plot for posts per month
+coys_posts <- ggplot(data = coys, aes(x = month, y = posts, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Posts",
+       subtitle = "coys Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Posts",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = posts), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+coys_posts
+
+# Create the bar plot for comments per month
+coys_com <- ggplot(data = coys, aes(x = month, y = comments, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Comments",
+       subtitle = "coys Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Comments",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = comments), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+coys_com
+
+# Create the bar plot for average comments per post per month
+coys_avgcom <- ggplot(data = coys, aes(x = month, y = avg_com, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Comments per Post",
+       subtitle = "coys Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Comments per Post",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_com), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+coys_avgcom
+
+# Create the bar plot for average post score
+coys_pscore <- ggplot(data = coys, aes(x = month, y = avg_post_score, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Post Score",
+       subtitle = "coys Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Post Score",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_post_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+coys_pscore
+
+```
+
+### chelseafc
+
+```{r}
+# chelseafc
+chelseafc <- data %>%
+  filter(subreddit == "chelseafc")
+
+# Convert "month" to a factor with the desired order
+chelseafc$month <- factor(chelseafc$month, levels = unique(chelseafc$month))
+
+# Create the bar plot for posts per month
+chelseafc_posts <- ggplot(data = chelseafc, aes(x = month, y = posts, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Posts",
+       subtitle = "chelseafc Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Posts",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = posts), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+chelseafc_posts
+
+# Create the bar plot for comments per month
+chelseafc_com <- ggplot(data = chelseafc, aes(x = month, y = comments, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Comments",
+       subtitle = "chelseafc Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Comments",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = comments), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+chelseafc_com
+
+# Create the bar plot for average comments per post per month
+chelseafc_avgcom <- ggplot(data = chelseafc, aes(x = month, y = avg_com, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Comments per Post",
+       subtitle = "chelseafc Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Comments per Post",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_com), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+chelseafc_avgcom
+
+# Create the bar plot for average post score
+chelseafc_pscore <- ggplot(data = chelseafc, aes(x = month, y = avg_post_score, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Post Score",
+       subtitle = "chelseafc Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Post Score",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_post_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+chelseafc_pscore
+
+```
+
+### LiverpoolFC
+
+```{r}
+# LiverpoolFC
+LiverpoolFC <- data %>%
+  filter(subreddit == "LiverpoolFC")
+
+# Convert "month" to a factor with the desired order
+LiverpoolFC$month <- factor(LiverpoolFC$month, levels = unique(LiverpoolFC$month))
+
+# Create the bar plot for posts per month
+LiverpoolFC_posts <- ggplot(data = LiverpoolFC, aes(x = month, y = posts, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Posts",
+       subtitle = "LiverpoolFC Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Posts",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = posts), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+LiverpoolFC_posts
+
+# Create the bar plot for comments per month
+LiverpoolFC_com <- ggplot(data = LiverpoolFC, aes(x = month, y = comments, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Comments",
+       subtitle = "LiverpoolFC Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Comments",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = comments), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+LiverpoolFC_com
+
+# Create the bar plot for average comments per post per month
+LiverpoolFC_avgcom <- ggplot(data = LiverpoolFC, aes(x = month, y = avg_com, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Comments per Post",
+       subtitle = "LiverpoolFC Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Comments per Post",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_com), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+LiverpoolFC_avgcom
+
+# Create the bar plot for average post score
+LiverpoolFC_pscore <- ggplot(data = LiverpoolFC, aes(x = month, y = avg_post_score, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Post Score",
+       subtitle = "LiverpoolFC Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Post Score",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_post_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+LiverpoolFC_pscore
+
+```
+
+### MCFC
+
+```{r}
+# MCFC
+MCFC <- data %>%
+  filter(subreddit == "MCFC")
+
+# Convert "month" to a factor with the desired order
+MCFC$month <- factor(MCFC$month, levels = unique(MCFC$month))
+
+# Create the bar plot for posts per month
+MCFC_posts <- ggplot(data = MCFC, aes(x = month, y = posts, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Posts",
+       subtitle = "MCFC Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Posts",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = posts), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+MCFC_posts
+
+# Create the bar plot for comments per month
+MCFC_com <- ggplot(data = MCFC, aes(x = month, y = comments, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Comments",
+       subtitle = "MCFC Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Comments",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = comments), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+MCFC_com
+
+# Create the bar plot for average comments per post per month
+MCFC_avgcom <- ggplot(data = MCFC, aes(x = month, y = avg_com, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Comments per Post",
+       subtitle = "MCFC Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Comments per Post",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_com), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+MCFC_avgcom
+
+# Create the bar plot for average post score
+MCFC_pscore <- ggplot(data = MCFC, aes(x = month, y = avg_post_score, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Post Score",
+       subtitle = "MCFC Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Post Score",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_post_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+MCFC_pscore
+
+```
+
+### fcbayern
+
+```{r}
+# fcbayern
+fcbayern <- data %>%
+  filter(subreddit == "fcbayern")
+
+# Convert "month" to a factor with the desired order
+fcbayern$month <- factor(fcbayern$month, levels = unique(fcbayern$month))
+
+# Create the bar plot for posts per month
+fcbayern_posts <- ggplot(data = fcbayern, aes(x = month, y = posts, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Posts",
+       subtitle = "fcbayern Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Posts",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = posts), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+fcbayern_posts
+
+# Create the bar plot for comments per month
+fcbayern_com <- ggplot(data = fcbayern, aes(x = month, y = comments, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Comments",
+       subtitle = "fcbayern Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Comments",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = comments), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+fcbayern_com
+
+# Create the bar plot for average comments per post per month
+fcbayern_avgcom <- ggplot(data = fcbayern, aes(x = month, y = avg_com, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Comments per Post",
+       subtitle = "fcbayern Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Comments per Post",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_com), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+fcbayern_avgcom
+
+# Create the bar plot for average post score
+fcbayern_pscore <- ggplot(data = fcbayern, aes(x = month, y = avg_post_score, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Post Score",
+       subtitle = "fcbayern Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Post Score",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_post_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+fcbayern_pscore
+
+```
+
+### avfc
+
+```{r}
+# avfc
+avfc <- data %>%
+  filter(subreddit == "avfc")
+
+# Convert "month" to a factor with the desired order
+avfc$month <- factor(avfc$month, levels = unique(avfc$month))
+
+# Create the bar plot for posts per month
+avfc_posts <- ggplot(data = avfc, aes(x = month, y = posts, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Posts",
+       subtitle = "avfc Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Posts",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = posts), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+avfc_posts
+
+# Create the bar plot for comments per month
+avfc_com <- ggplot(data = avfc, aes(x = month, y = comments, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Comments",
+       subtitle = "avfc Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Comments",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = comments), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+avfc_com
+
+# Create the bar plot for average comments per post per month
+avfc_avgcom <- ggplot(data = avfc, aes(x = month, y = avg_com, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Comments per Post",
+       subtitle = "avfc Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Comments per Post",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_com), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+avfc_avgcom
+
+# Create the bar plot for average post score
+avfc_pscore <- ggplot(data = avfc, aes(x = month, y = avg_post_score, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Post Score",
+       subtitle = "avfc Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Post Score",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_post_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+avfc_pscore
+
+```
+
+### BrightonHoveAlbion
+
+```{r}
+# BrightonHoveAlbion
+BrightonHoveAlbion <- data %>%
+  filter(subreddit == "BrightonHoveAlbion")
+
+# Convert "month" to a factor with the desired order
+BrightonHoveAlbion$month <- factor(BrightonHoveAlbion$month, levels = unique(BrightonHoveAlbion$month))
+
+# Create the bar plot for posts per month
+BrightonHoveAlbion_posts <- ggplot(data = BrightonHoveAlbion, aes(x = month, y = posts, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Posts",
+       subtitle = "BrightonHoveAlbion Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Posts",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = posts), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+BrightonHoveAlbion_posts
+
+# Create the bar plot for comments per month
+BrightonHoveAlbion_com <- ggplot(data = BrightonHoveAlbion, aes(x = month, y = comments, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Comments",
+       subtitle = "BrightonHoveAlbion Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Comments",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = comments), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+BrightonHoveAlbion_com
+
+# Create the bar plot for average comments per post per month
+BrightonHoveAlbion_avgcom <- ggplot(data = BrightonHoveAlbion, aes(x = month, y = avg_com, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Comments per Post",
+       subtitle = "BrightonHoveAlbion Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Comments per Post",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_com), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+BrightonHoveAlbion_avgcom
+
+# Create the bar plot for average post score
+BrightonHoveAlbion_pscore <- ggplot(data = BrightonHoveAlbion, aes(x = month, y = avg_post_score, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Post Score",
+       subtitle = "BrightonHoveAlbion Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Post Score",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_post_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+BrightonHoveAlbion_pscore
+
+```
+
+### Everton
+
+```{r}
+# Everton
+Everton <- data %>%
+  filter(subreddit == "Everton")
+
+# Convert "month" to a factor with the desired order
+Everton$month <- factor(Everton$month, levels = unique(Everton$month))
+
+# Create the bar plot for posts per month
+Everton_posts <- ggplot(data = Everton, aes(x = month, y = posts, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Posts",
+       subtitle = "Everton Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Posts",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = posts), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Everton_posts
+
+# Create the bar plot for comments per month
+Everton_com <- ggplot(data = Everton, aes(x = month, y = comments, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Comments",
+       subtitle = "Everton Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Comments",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = comments), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Everton_com
+
+# Create the bar plot for average comments per post per month
+Everton_avgcom <- ggplot(data = Everton, aes(x = month, y = avg_com, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Comments per Post",
+       subtitle = "Everton Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Comments per Post",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_com), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Everton_avgcom
+
+# Create the bar plot for average post score
+Everton_pscore <- ggplot(data = Everton, aes(x = month, y = avg_post_score, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Post Score",
+       subtitle = "Everton Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Post Score",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_post_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Everton_pscore
+
+```
+
+### Hammers
+
+```{r}
+# Hammers
+Hammers <- data %>%
+  filter(subreddit == "Hammers")
+
+# Convert "month" to a factor with the desired order
+Hammers$month <- factor(Hammers$month, levels = unique(Hammers$month))
+
+# Create the bar plot for posts per month
+Hammers_posts <- ggplot(data = Hammers, aes(x = month, y = posts, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Posts",
+       subtitle = "Hammers Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Posts",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = posts), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Hammers_posts
+
+# Create the bar plot for comments per month
+Hammers_com <- ggplot(data = Hammers, aes(x = month, y = comments, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Comments",
+       subtitle = "Hammers Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Comments",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = comments), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Hammers_com
+
+# Create the bar plot for average comments per post per month
+Hammers_avgcom <- ggplot(data = Hammers, aes(x = month, y = avg_com, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Comments per Post",
+       subtitle = "Hammers Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Comments per Post",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_com), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Hammers_avgcom
+
+# Create the bar plot for average post score
+Hammers_pscore <- ggplot(data = Hammers, aes(x = month, y = avg_post_score, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Post Score",
+       subtitle = "Hammers Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Post Score",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_post_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Hammers_pscore
+
+```
+
+### Juve
+
+```{r}
+# Juve
+Juve <- data %>%
+  filter(subreddit == "Juve")
+
+# Convert "month" to a factor with the desired order
+Juve$month <- factor(Juve$month, levels = unique(Juve$month))
+
+# Create the bar plot for posts per month
+Juve_posts <- ggplot(data = Juve, aes(x = month, y = posts, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Posts",
+       subtitle = "Juve Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Posts",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = posts), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Juve_posts
+
+# Create the bar plot for comments per month
+Juve_com <- ggplot(data = Juve, aes(x = month, y = comments, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Comments",
+       subtitle = "Juve Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Comments",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = comments), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Juve_com
+
+# Create the bar plot for average comments per post per month
+Juve_avgcom <- ggplot(data = Juve, aes(x = month, y = avg_com, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Comments per Post",
+       subtitle = "Juve Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Comments per Post",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_com), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Juve_avgcom
+
+# Create the bar plot for average post score
+Juve_pscore <- ggplot(data = Juve, aes(x = month, y = avg_post_score, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Post Score",
+       subtitle = "Juve Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Post Score",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_post_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Juve_pscore
+
+```
+
+### lcfc
+
+```{r}
+# lcfc
+lcfc <- data %>%
+  filter(subreddit == "lcfc")
+
+# Convert "month" to a factor with the desired order
+lcfc$month <- factor(lcfc$month, levels = unique(lcfc$month))
+
+# Create the bar plot for posts per month
+lcfc_posts <- ggplot(data = lcfc, aes(x = month, y = posts, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Posts",
+       subtitle = "lcfc Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Posts",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = posts), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+lcfc_posts
+
+# Create the bar plot for comments per month
+lcfc_com <- ggplot(data = lcfc, aes(x = month, y = comments, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Comments",
+       subtitle = "lcfc Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Comments",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = comments), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+lcfc_com
+
+# Create the bar plot for average comments per post per month
+lcfc_avgcom <- ggplot(data = lcfc, aes(x = month, y = avg_com, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Comments per Post",
+       subtitle = "lcfc Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Comments per Post",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_com), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+lcfc_avgcom
+
+# Create the bar plot for average post score
+lcfc_pscore <- ggplot(data = lcfc, aes(x = month, y = avg_post_score, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Post Score",
+       subtitle = "lcfc Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Post Score",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_post_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+lcfc_pscore
+
+```
+
+### OlympiqueLyonnais
+
+```{r}
+# OlympiqueLyonnais
+OlympiqueLyonnais <- data %>%
+  filter(subreddit == "OlympiqueLyonnais")
+
+# Convert "month" to a factor with the desired order
+OlympiqueLyonnais$month <- factor(OlympiqueLyonnais$month, levels = unique(OlympiqueLyonnais$month))
+
+# Create the bar plot for posts per month
+OlympiqueLyonnais_posts <- ggplot(data = OlympiqueLyonnais, aes(x = month, y = posts, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Posts",
+       subtitle = "OlympiqueLyonnais Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Posts",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = posts), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+OlympiqueLyonnais_posts
+
+# Create the bar plot for comments per month
+OlympiqueLyonnais_com <- ggplot(data = OlympiqueLyonnais, aes(x = month, y = comments, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Comments",
+       subtitle = "OlympiqueLyonnais Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Comments",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = comments), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+OlympiqueLyonnais_com
+
+# Create the bar plot for average comments per post per month
+OlympiqueLyonnais_avgcom <- ggplot(data = OlympiqueLyonnais, aes(x = month, y = avg_com, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Comments per Post",
+       subtitle = "OlympiqueLyonnais Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Comments per Post",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_com), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+OlympiqueLyonnais_avgcom
+
+# Create the bar plot for average post score
+OlympiqueLyonnais_pscore <- ggplot(data = OlympiqueLyonnais, aes(x = month, y = avg_post_score, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Post Score",
+       subtitle = "OlympiqueLyonnais Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Post Score",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_post_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+OlympiqueLyonnais_pscore
+
+```
+### realmadrid
+
+```{r}
+# realmadrid
+realmadrid <- data %>%
+  filter(subreddit == "realmadrid")
+
+# Convert "month" to a factor with the desired order
+realmadrid$month <- factor(realmadrid$month, levels = unique(realmadrid$month))
+
+# Create the bar plot for posts per month
+realmadrid_posts <- ggplot(data = realmadrid, aes(x = month, y = posts, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Posts",
+       subtitle = "realmadrid Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Posts",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = posts), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+realmadrid_posts
+
+# Create the bar plot for comments per month
+realmadrid_com <- ggplot(data = realmadrid, aes(x = month, y = comments, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Comments",
+       subtitle = "realmadrid Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Comments",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = comments), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+realmadrid_com
+
+# Create the bar plot for average comments per post per month
+realmadrid_avgcom <- ggplot(data = realmadrid, aes(x = month, y = avg_com, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Comments per Post",
+       subtitle = "realmadrid Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Comments per Post",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_com), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+realmadrid_avgcom
+
+# Create the bar plot for average post score
+realmadrid_pscore <- ggplot(data = realmadrid, aes(x = month, y = avg_post_score, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Post Score",
+       subtitle = "realmadrid Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Post Score",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_post_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+realmadrid_pscore
+
+```
+
+### Urz
+
+```{r}
+# Urz
+Urz <- data %>%
+  filter(subreddit == "Urz")
+
+# Convert "month" to a factor with the desired order
+Urz$month <- factor(Urz$month, levels = unique(Urz$month))
+
+# Create the bar plot for posts per month
+Urz_posts <- ggplot(data = Urz, aes(x = month, y = posts, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Posts",
+       subtitle = "Urz Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Posts",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = posts), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Urz_posts
+
+# Create the bar plot for comments per month
+Urz_com <- ggplot(data = Urz, aes(x = month, y = comments, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Comments",
+       subtitle = "Urz Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Comments",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = comments), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Urz_com
+
+# Create the bar plot for average comments per post per month
+Urz_avgcom <- ggplot(data = Urz, aes(x = month, y = avg_com, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Comments per Post",
+       subtitle = "Urz Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Comments per Post",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_com), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Urz_avgcom
+
+# Create the bar plot for average post score
+Urz_pscore <- ggplot(data = Urz, aes(x = month, y = avg_post_score, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Post Score",
+       subtitle = "Urz Subreddit",
+       caption = "Analysis of posts and comments rearidng the women's team",
+       x = "Month",
+       y = "Average Post Score",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_post_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+Urz_pscore
+
+```
+
+### Control
+
+```{r}
+# Control
+control <- data %>%
+  filter(g == 0)
+
+```
+
+
+```{r}
+# Calculate the sum of posts per month
+control_posts <- control %>%
+  group_by(month, date, t) %>%
+  summarise(total_posts = sum(posts), .groups = "drop") %>%
+  arrange(date)
+
+# Convert "month" to a factor with the desired order
+control_posts$month <- factor(control_posts$month, levels = unique(control_posts$month))
+
+# Create the bar plot
+c_posts <- ggplot(data = control_posts, aes(x = month, y = total_posts, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Posts for the Control Group",
+       x = "Month",
+       y = "Total Posts",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = total_posts), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+c_posts
+
+```
+
+
+```{r}
+# Calculate the sum of comments per month
+control_com <- control %>%
+  group_by(month, date, t) %>%
+  summarise(total_comments = sum(comments), .groups = "drop") %>%
+  arrange(date)
+
+# Convert "month" to a factor with the desired order
+control_com$month <- factor(control_com$month, levels = unique(control_com$month))
+
+# Create the bar plot
+c_com <- ggplot(data = control_com, aes(x = month, y = total_comments, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Comments for the Control Group",
+       x = "Month",
+       y = "Total Comments",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = total_comments), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+c_com
+
+```
+
+```{r}
+# Calculate the average comments per post per month
+control_avgcom <- control %>%
+  group_by(month, date, t) %>%
+  summarise(total_comments = sum(comments),
+            total_posts = sum(posts),
+            .groups = "drop") %>%
+  mutate(avg_com_pp = round((total_comments / total_posts), 0)) %>%
+  arrange(date)
+
+# Convert "month" to a factor with the desired order
+control_avgcom$month <- factor(control_avgcom$month, levels = unique(control_avgcom$month))
+
+# Create the bar plot
+c_avgcom <- ggplot(data = control_avgcom, aes(x = month, y = avg_com_pp, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Comments per Post for the Control Group",
+       x = "Month",
+       y = "Average Comments per Post",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_com_pp), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+c_avgcom
+
+```
+
+```{r}
+# Calculate the average post score per month
+control_post_score <- control %>%
+  group_by(month, date, t) %>%
+  summarise(total_posts = sum(posts),
+            total_score = sum(posts*avg_post_score),
+            .groups = "drop") %>%
+  mutate(avg_post_score = round((total_score / total_posts), 0)) %>%
+  arrange(date)
+
+# Convert "month" to a factor with the desired order
+control_post_score$month <- factor(control_post_score$month, levels = unique(control_post_score$month))
+
+# Create the bar plot
+c_pscore <- ggplot(data = control_post_score, aes(x = month, y = avg_post_score, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Post Score for the Control Group",
+       x = "Month",
+       y = "Avg. Post Score",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_post_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+c_pscore
+
+```
+
+### Treatment
+
+```{r}
+# Treatment
+treatment <- data %>%
+  filter(g == 1)
+
+```
+
+
+```{r}
+# Calculate the sum of posts per month
+treatment_posts <- treatment %>%
+  group_by(month, date, t) %>%
+  summarise(total_posts = sum(posts), .groups = "drop") %>%
+  arrange(date)
+
+# Convert "month" to a factor with the desired order
+treatment_posts$month <- factor(treatment_posts$month, levels = unique(treatment_posts$month))
+
+# Create the bar plot
+t_posts <- ggplot(data = treatment_posts, aes(x = month, y = total_posts, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Posts for the Treatment Group",
+       x = "Month",
+       y = "Total Posts",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = total_posts), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+t_posts
+
+```
+
+```{r}
+# Calculate the proportion of moderated posts per month
+treatment_com <- treatment %>%
+  group_by(month, date, t) %>%
+  summarise(total_comments = sum(comments), .groups = "drop") %>%
+  arrange(date)
+
+# Convert "month" to a factor with the desired order
+treatment_com$month <- factor(treatment_com$month, levels = unique(treatment_com$month))
+
+# Create the bar plot
+t_com <- ggplot(data = treatment_com, aes(x = month, y = total_comments, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Comments for the Treatment Group",
+       x = "Month",
+       y = "Total Comments",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = total_comments), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+t_com
+
+```
+
+```{r}
+# Calculate the average comments per post per month
+treatment_avgcom <- treatment %>%
+  group_by(month, date, t) %>%
+  summarise(total_comments = sum(comments),
+            total_posts = sum(posts),
+            .groups = "drop") %>%
+  mutate(avg_com_pp = round((total_comments / total_posts), 0)) %>%
+  arrange(date)
+
+# Convert "month" to a factor with the desired order
+treatment_avgcom$month <- factor(treatment_avgcom$month, levels = unique(treatment_avgcom$month))
+
+# Create the bar plot
+t_avgcom <- ggplot(data = treatment_avgcom, aes(x = month, y = avg_com_pp, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Comments per Post for the treatment Group",
+       x = "Month",
+       y = "Average Comments per Post",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_com_pp), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+t_avgcom
+
+```
+
+```{r}
+# Calculate the average post score per month
+treatment_post_score <- treatment %>%
+  group_by(month, date, t) %>%
+  summarise(total_posts = sum(posts),
+            total_score = sum(posts*avg_post_score),
+            .groups = "drop") %>%
+  mutate(avg_post_score = round((total_score / total_posts), 0)) %>%
+  arrange(date)
+
+# Convert "month" to a factor with the desired order
+treatment_post_score$month <- factor(treatment_post_score$month, levels = unique(treatment_post_score$month))
+
+# Create the bar plot
+t_pscore <- ggplot(data = treatment_post_score, aes(x = month, y = avg_post_score, fill = t)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Post Score for the Treatment Group",
+       x = "Month",
+       y = "Avg. Post Score",
+       fill = "T") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1), legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  geom_text(aes(label = avg_post_score), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+t_pscore
+
+```
+
+### OLS Per Subreddit
+
+```{r}
+# Convert the 'date' column to POSIXct class
+data$date <- as.POSIXct(data$date)
+
+# Get unique subreddits
+subreddits <- unique(data$subreddit)
+```
+
+
+```{r}
+# Iterate over each subreddit
+for (subreddit in subreddits) {
+  # Subset the data for the current subreddit and date <= 2022-07-01
+  pscore_subset_data1 <- data[data$subreddit == subreddit & data$date <= as.Date("2022-07-01"), ]
+  
+  # Subset the data for the current subreddit and date > 2022-07-01
+  pscore_subset_data2 <- data[data$subreddit == subreddit & data$date > as.Date("2022-07-01"), ]
+  
+  # Fit the regression model for subset_data1
+  pscore_regression_model1 <- lm(avg_post_score ~ date, data = pscore_subset_data1)
+  
+  # Fit the regression model for subset_data2
+  pscore_regression_model2 <- lm(avg_post_score ~ date, data = pscore_subset_data2)
+  
+  # Create a data frame for predictions
+  prediction_data1 <- data.frame(date = pscore_subset_data1$date)
+  prediction_data2 <- data.frame(date = pscore_subset_data2$date)
+  
+  # Add predictions to the data frame
+  prediction_data1$prediction1 <- predict(pscore_regression_model1, newdata = prediction_data1)
+  prediction_data2$prediction2 <- predict(pscore_regression_model2, newdata = prediction_data2)
+  
+  # Calculate the maximum avg_post_score within each subreddit subset
+  pscore_max_score <- max(c(max(pscore_subset_data1$avg_post_score),
+                            max(pscore_subset_data2$avg_post_score)))
+  
+  # Create a graph for both regressions
+  pscore_p <- ggplot() +
+    geom_point(data = pscore_subset_data1,
+               aes(x = date, y = avg_post_score), color = "red") +
+    geom_point(data = pscore_subset_data2,
+               aes(x = date, y = avg_post_score), color = "blue") +
+    geom_line(data = prediction_data1,
+              aes(x = date, y = prediction1), color = "red") +
+    geom_line(data = prediction_data2,
+              aes(x = date, y = prediction2), color = "blue") +
+    labs(title = paste("Regressions for Subreddit", subreddit),
+         subtitle = "Outcome Variable: Average Post Score",
+         x = "Date",
+         y = "Average Post Score") +
+    scale_color_manual(values = c("red", "blue"),
+                       labels = c("Date <= 2022-07-01", "Date > 2022-07-01")) +
+    theme_minimal() +
+    geom_vline(xintercept = as.numeric(as.POSIXct("2022-07-01")), linetype = "dashed", color = "gray") +
+    annotate("text", x = as.POSIXct("2022-07-01"), y = pscore_max_score, 
+             label = "Women Euros 2022", vjust = -0.5, hjust = 0, color = "black", fontface = "bold")
+  
+  # Print the plot
+  print(pscore_p)
+  
+  # Assign the plot object to a variable with a name corresponding to the subreddit
+  assign(paste0("pscore_", subreddit), pscore_p)
+}
+
+```
+
+```{r}
+# Iterate over each subreddit
+for (subreddit in subreddits) {
+  # Subset the data for the current subreddit and date <= 2022-07-01
+  avgcom_subset_data1 <- data[data$subreddit == subreddit & data$date <= as.Date("2022-07-01"), ]
+  
+  # Subset the data for the current subreddit and date > 2022-07-01
+  avgcom_subset_data2 <- data[data$subreddit == subreddit & data$date > as.Date("2022-07-01"), ]
+  
+  # Fit the regression model for subset_data1
+  avgcom_regression_model1 <- lm(avg_com ~ date, data = avgcom_subset_data1)
+  
+  # Fit the regression model for subset_data2
+  avgcom_regression_model2 <- lm(avg_com ~ date, data = avgcom_subset_data2)
+  
+  # Create a data frame for predictions
+  prediction_data1 <- data.frame(date = avgcom_subset_data1$date)
+  prediction_data2 <- data.frame(date = avgcom_subset_data2$date)
+  
+  # Add predictions to the data frame
+  prediction_data1$prediction1 <- predict(avgcom_regression_model1, newdata = prediction_data1)
+  prediction_data2$prediction2 <- predict(avgcom_regression_model2, newdata = prediction_data2)
+  
+  # Calculate the maximum avg_com within each subreddit subset
+  avgcom_max_score <- max(c(max(avgcom_subset_data1$avg_com),
+                            max(avgcom_subset_data2$avg_com)))
+  
+  # Create a graph for both regressions
+  avgcom_p <- ggplot() +
+    geom_point(data = avgcom_subset_data1,
+               aes(x = date, y = avg_com), color = "red") +
+    geom_point(data = avgcom_subset_data2,
+               aes(x = date, y = avg_com), color = "blue") +
+    geom_line(data = prediction_data1,
+              aes(x = date, y = prediction1), color = "red") +
+    geom_line(data = prediction_data2,
+              aes(x = date, y = prediction2), color = "blue") +
+    labs(title = paste("Regressions for Subreddit", subreddit),
+         subtitle = "Outcome Variable: Average Comments per Post",
+         x = "Date",
+         y = "Average Comments per Post") +
+    scale_color_manual(values = c("red", "blue"),
+                       labels = c("Date <= 2022-07-01", "Date > 2022-07-01")) +
+    theme_minimal() +
+    geom_vline(xintercept = as.numeric(as.POSIXct("2022-07-01")), linetype = "dashed", color = "gray") +
+    annotate("text", x = as.POSIXct("2022-07-01"), y = avgcom_max_score, 
+             label = "Women Euros 2022", vjust = -0.5, hjust = 0, color = "black", fontface = "bold")
+  
+  # Print the plot
+  print(avgcom_p)
+  
+  # Assign the plot object to a variable with a name corresponding to the subreddit
+  assign(paste0("avgcom_", subreddit), avgcom_p)
+}
+
+```
+### Control and Treatment OLS Analysis
+
+Average Post Score
+
+```{r}
+# Convert the 'date' column to POSIXct class
+control$date <- as.POSIXct(control$date)
+
+# Subset the control for date <= 2022-07-01
+pscore_subset_c1 <- control[control$date <= as.Date("2022-07-01"), ]
+# Subset the control for date > 2022-07-01
+pscore_subset_c2 <- control[control$date > as.Date("2022-07-01"), ]
+# Fit the regression model for subset_control1
+pscore_regression1_c <- lm(avg_post_score ~ date, data = pscore_subset_c1)
+# Fit the regression model for subset_control2
+pscore_regression2_c <- lm(avg_post_score ~ date, data = pscore_subset_c2)
+# Calculate the maximum avg_post_score for each subset
+pscore_max_score_c <- max(control$avg_post_score)
+
+# Create a graph for both regressions
+pscore_p_c <- ggplot() +
+  geom_point(data = pscore_subset_c1,
+             aes(x = date, y = avg_post_score), color = "red") +
+  geom_point(data = pscore_subset_c2,
+             aes(x = date, y = avg_post_score), color = "blue") +
+  geom_line(data = pscore_subset_c1,
+            aes(x = date, y = predict(pscore_regression1_c)), color = "red") +
+  geom_line(data = pscore_subset_c2,
+            aes(x = date, y = predict(pscore_regression2_c)), color = "blue") +
+  labs(title = "Regressions for the Control Group",
+       subtitle = "Outcome Variable: Average Post Score",
+       caption = "First OLS: Jun20-Jul22; Second OLS: Jul22-May23",
+       x = "Date",
+       y = "Average Post Score") +
+  scale_color_manual(values = c("red", "blue"),
+                     labels = c("Date <= 2022-07-01", "Date > 2022-07-01")) +
+  theme_minimal() +
+  geom_vline(xintercept = as.numeric(as.POSIXct("2022-07-01")), linetype = "dashed", color = "gray") +
+  annotate("text", x = as.POSIXct("2022-07-01"), y = pscore_max_score_c, 
+           label = "July 2022: Women Euros", vjust = 1, hjust = 0, color = "black", fontface = "bold")
+
+print(pscore_p_c)
+
+```
+
+```{r}
+# Convert the 'date' column to POSIXct class
+treatment$date <- as.POSIXct(treatment$date)
+
+# Subset the treatment for date <= 2022-07-01
+pscore_subset_t1 <- treatment[treatment$date <= as.Date("2022-07-01"), ]
+# Subset the treatment for date > 2022-07-01
+pscore_subset_t2 <- treatment[treatment$date > as.Date("2022-07-01"), ]
+# Fit the regression model for subset_treatment1
+pscore_regression1_t <- lm(avg_post_score ~ date, data = pscore_subset_t1)
+# Fit the regression model for subset_treatment2
+pscore_regression2_t <- lm(avg_post_score ~ date, data = pscore_subset_t2)
+# Calculate the maximum avg_post_score for each subset
+pscore_max_score_t <- max(treatment$avg_post_score)
+
+# Create a graph for both regressions
+pscore_p_t <- ggplot() +
+  geom_point(data = pscore_subset_t1,
+             aes(x = date, y = avg_post_score), color = "red") +
+  geom_point(data = pscore_subset_t2,
+             aes(x = date, y = avg_post_score), color = "blue") +
+  geom_line(data = pscore_subset_t1,
+            aes(x = date, y = predict(pscore_regression1_t)), color = "red") +
+  geom_line(data = pscore_subset_t2,
+            aes(x = date, y = predict(pscore_regression2_t)), color = "blue") +
+  labs(title = "Regressions for the Treatment Group",
+       subtitle = "Outcome Variable: Average Post Score",
+       caption = "First OLS: Jun20-Jul22; Second OLS: Jul22-May23",
+       x = "Date",
+       y = "Average Post Score") +
+  scale_color_manual(values = c("red", "blue"),
+                     labels = c("Date <= 2022-07-01", "Date > 2022-07-01")) +
+  theme_minimal() +
+  geom_vline(xintercept = as.numeric(as.POSIXct("2022-07-01")), linetype = "dashed", color = "gray") +
+  annotate("text", x = as.POSIXct("2022-07-01"), y = pscore_max_score_c, 
+           label = "July 2022: Women Euros", vjust = 1, hjust = 0, color = "black", fontface = "bold")
+
+print(pscore_p_t)
+
+```
+
+Comments per Post
+
+```{r}
+# Convert the 'date' column to POSIXct class
+control$date <- as.POSIXct(control$date)
+
+# Subset the control for date <= 2022-07-01
+avgcom_subset_c1 <- control[control$date <= as.Date("2022-07-01"), ]
+# Subset the control for date > 2022-07-01
+avgcom_subset_c2 <- control[control$date > as.Date("2022-07-01"), ]
+# Fit the regression model for subset_control1
+avgcom_regression1_c <- lm(avg_com ~ date, data = avgcom_subset_c1)
+# Fit the regression model for subset_control2
+avgcom_regression2_c <- lm(avg_com ~ date, data = avgcom_subset_c2)
+# Calculate the maximum avg_com for each subset
+avgcom_max_score_c <- max(control$avg_com)
+
+# Create a graph for both regressions
+avgcom_p_c <- ggplot() +
+  geom_point(data = avgcom_subset_c1,
+             aes(x = date, y = avg_com), color = "red") +
+  geom_point(data = avgcom_subset_c2,
+             aes(x = date, y = avg_com), color = "blue") +
+  geom_line(data = avgcom_subset_c1,
+            aes(x = date, y = predict(avgcom_regression1_c)), color = "red") +
+  geom_line(data = avgcom_subset_c2,
+            aes(x = date, y = predict(avgcom_regression2_c)), color = "blue") +
+  labs(title = "Regressions for the Control Group",
+       subtitle = "Outcome Variable: Average Comments per Post",
+       caption = "First OLS: Jun20-Jul22; Second OLS: Jul22-May23",
+       x = "Date",
+       y = "Average Comments per Post") +
+  scale_color_manual(values = c("red", "blue"),
+                     labels = c("Date <= 2022-07-01", "Date > 2022-07-01")) +
+  theme_minimal() +
+  geom_vline(xintercept = as.numeric(as.POSIXct("2022-07-01")), linetype = "dashed", color = "gray") +
+  annotate("text", x = as.POSIXct("2022-07-01"), y = avgcom_max_score_c, 
+           label = "July 2022: Women Euros", vjust = 1, hjust = 0, color = "black", fontface = "bold")
+
+print(avgcom_p_c)
+
+```
+
+```{r}
+# Convert the 'date' column to POSIXct class
+treatment$date <- as.POSIXct(treatment$date)
+
+# Subset the treatment for date <= 2022-07-01
+avgcom_subset_t1 <- treatment[treatment$date <= as.Date("2022-07-01"), ]
+# Subset the treatment for date > 2022-07-01
+avgcom_subset_t2 <- treatment[treatment$date > as.Date("2022-07-01"), ]
+# Fit the regression model for subset_treatment1
+avgcom_regression1_t <- lm(avg_com ~ date, data = avgcom_subset_t1)
+# Fit the regression model for subset_treatment2
+avgcom_regression2_t <- lm(avg_com ~ date, data = avgcom_subset_t2)
+# Calculate the maximum avg_com for each subset
+avgcom_max_score_t <- max(treatment$avg_com)
+
+# Create a graph for both regressions
+avgcom_p_t <- ggplot() +
+  geom_point(data = avgcom_subset_t1,
+             aes(x = date, y = avg_com), color = "red") +
+  geom_point(data = avgcom_subset_t2,
+             aes(x = date, y = avg_com), color = "blue") +
+  geom_line(data = avgcom_subset_t1,
+            aes(x = date, y = predict(avgcom_regression1_t)), color = "red") +
+  geom_line(data = avgcom_subset_t2,
+            aes(x = date, y = predict(avgcom_regression2_t)), color = "blue") +
+  labs(title = "Regressions for the Treatment Group",
+       subtitle = "Outcome Variable: Average Comments per Post",
+       caption = "First OLS: Jun20-Jul22; Second OLS: Jul22-May23",
+       x = "Date",
+       y = "Average Comments per Post") +
+  scale_color_manual(values = c("red", "blue"),
+                     labels = c("Date <= 2022-07-01", "Date > 2022-07-01")) +
+  theme_minimal() +
+  geom_vline(xintercept = as.numeric(as.POSIXct("2022-07-01")), linetype = "dashed", color = "gray") +
+  annotate("text", x = as.POSIXct("2022-07-01"), y = avgcom_max_score_t, 
+           label = "July 2022: Women Euros", vjust = 1, hjust = 0, color = "black", fontface = "bold")
+
+print(avgcom_p_t)
+
+```

@@ -1,0 +1,540 @@
+---
+title: "Data Collection non-UK teams"
+author: "Emilio Robleda"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Load libraries
+
+```{r Load Libraries, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(RedditExtractoR)
+
+```
+
+# Data Download of Submissions
+
+In this part we make use of Reddit's API to extract submissions regarding each club's women's team. We then filter out to keep only the unique observations and afterwards we further clean the data in Excel. After cleaning the data in Excel we return the data to R.
+
+### Team: Barcelona Femeni
+Subreddit: barca
+
+```{r barca API calls, eval=FALSE}
+# Download data
+barca_url1 <- find_thread_urls(subreddit="barca",
+                                   keywords = "femeni",
+                                   sort_by = "relevance",
+                                   period = "all")
+barca_url2 <- find_thread_urls(subreddit="barca",
+                                   keywords = "femeni",
+                                   sort_by = "comments",
+                                   period = "all") 
+barca_url3 <- find_thread_urls(subreddit="barca",
+                                   keywords = "femeni",
+                                   sort_by = "new",
+                                   period = "all") 
+barca_url4 <- find_thread_urls(subreddit="barca",
+                                   keywords = "femeni",
+                                   sort_by = "hot",
+                                   period = "all") 
+barca_url5 <- find_thread_urls(subreddit="barca",
+                                   keywords = "femeni",
+                                   sort_by = "top",
+                                   period = "all") 
+barca_url6 <- find_thread_urls(subreddit="barca",
+                                   keywords = "women",
+                                   sort_by = "relevance",
+                                   period = "all") 
+barca_url7 <- find_thread_urls(subreddit="barca",
+                                   keywords = "women",
+                                   sort_by = "comments",
+                                   period = "all") 
+barca_url8 <- find_thread_urls(subreddit="barca",
+                                   keywords = "women",
+                                   sort_by = "new",
+                                   period = "all") 
+barca_url9 <- find_thread_urls(subreddit="barca",
+                                   keywords = "women",
+                                   sort_by = "hot",
+                                   period = "all") 
+barca_url10 <- find_thread_urls(subreddit="barca",
+                                   keywords = "women",
+                                   sort_by = "top",
+                                   period = "all") 
+barca_url11 <- find_thread_urls(subreddit="barca",
+                                   keywords = "ladies",
+                                   sort_by = "relevance",
+                                   period = "all")
+barca_url12 <- find_thread_urls(subreddit="barca",
+                                   keywords = "ladies",
+                                   sort_by = "comments",
+                                   period = "all") 
+barca_url13 <- find_thread_urls(subreddit="barca",
+                                   keywords = "ladies",
+                                   sort_by = "new",
+                                   period = "all") 
+barca_url14 <- find_thread_urls(subreddit="barca",
+                                   keywords = "ladies",
+                                   sort_by = "hot",
+                                   period = "all") 
+barca_url15 <- find_thread_urls(subreddit="barca",
+                                   keywords = "ladies",
+                                   sort_by = "top",
+                                   period = "all")
+
+```
+
+```{r barca cleansing, eval=FALSE}
+# Bind all the data frames together
+barca_url <- bind_rows(barca_url1, barca_url2, barca_url3, barca_url4, barca_url5, 
+                            barca_url6, barca_url7, barca_url8, barca_url9, barca_url10, 
+                            barca_url11, barca_url12, barca_url13, barca_url14, barca_url15) 
+
+# Keep only the unique observations
+barca_url <- distinct(barca_url) %>%
+  arrange(timestamp)
+
+# Convert data to .csv file
+write.csv(barca_url, file = "barca.csv", row.names = T)
+
+## CLEAN MANUALLY IN EXCEL
+
+```
+
+```{r barca database, eval=FALSE}
+# Download clean data
+barca <- read.csv("barca.csv")
+
+```
+
+### Team: OL Feminin
+Subreddit: OlympiqueLyonnais
+
+```{r OlympiqueLyonnais API calls, eval=FALSE}
+# Download data
+OlympiqueLyonnais_url1 <- find_thread_urls(subreddit="OlympiqueLyonnais",
+                                   keywords = "OL's Woman team",
+                                   sort_by = "relevance",
+                                   period = "all")
+OlympiqueLyonnais_url2 <- find_thread_urls(subreddit="OlympiqueLyonnais",
+                                   keywords = "OL's Woman team",
+                                   sort_by = "comments",
+                                   period = "all") 
+OlympiqueLyonnais_url3 <- find_thread_urls(subreddit="OlympiqueLyonnais",
+                                   keywords = "OL's Woman team",
+                                   sort_by = "new",
+                                   period = "all") 
+OlympiqueLyonnais_url4 <- find_thread_urls(subreddit="OlympiqueLyonnais",
+                                   keywords = "OL's Woman team",
+                                   sort_by = "hot",
+                                   period = "all") 
+OlympiqueLyonnais_url5 <- find_thread_urls(subreddit="OlympiqueLyonnais",
+                                   keywords = "OL's Woman team",
+                                   sort_by = "top",
+                                   period = "all") 
+OlympiqueLyonnais_url6 <- find_thread_urls(subreddit="OlympiqueLyonnais",
+                                   keywords = "women",
+                                   sort_by = "relevance",
+                                   period = "all") 
+OlympiqueLyonnais_url7 <- find_thread_urls(subreddit="OlympiqueLyonnais",
+                                   keywords = "women",
+                                   sort_by = "comments",
+                                   period = "all") 
+OlympiqueLyonnais_url8 <- find_thread_urls(subreddit="OlympiqueLyonnais",
+                                   keywords = "women",
+                                   sort_by = "new",
+                                   period = "all") 
+OlympiqueLyonnais_url9 <- find_thread_urls(subreddit="OlympiqueLyonnais",
+                                   keywords = "women",
+                                   sort_by = "hot",
+                                   period = "all") 
+OlympiqueLyonnais_url10 <- find_thread_urls(subreddit="OlympiqueLyonnais",
+                                   keywords = "women",
+                                   sort_by = "top",
+                                   period = "all") 
+OlympiqueLyonnais_url11 <- find_thread_urls(subreddit="OlympiqueLyonnais",
+                                   keywords = "feminin",
+                                   sort_by = "relevance",
+                                   period = "all")
+OlympiqueLyonnais_url12 <- find_thread_urls(subreddit="OlympiqueLyonnais",
+                                   keywords = "feminin",
+                                   sort_by = "comments",
+                                   period = "all") 
+OlympiqueLyonnais_url13 <- find_thread_urls(subreddit="OlympiqueLyonnais",
+                                   keywords = "feminin",
+                                   sort_by = "new",
+                                   period = "all") 
+OlympiqueLyonnais_url14 <- find_thread_urls(subreddit="OlympiqueLyonnais",
+                                   keywords = "feminin",
+                                   sort_by = "hot",
+                                   period = "all") 
+OlympiqueLyonnais_url15 <- find_thread_urls(subreddit="OlympiqueLyonnais",
+                                   keywords = "feminin",
+                                   sort_by = "top",
+                                   period = "all")
+
+```
+
+```{r OlympiqueLyonnais cleansing, eval=FALSE}
+# Bind all the data frames together
+OlympiqueLyonnais_url <- bind_rows(OlympiqueLyonnais_url1, OlympiqueLyonnais_url2, OlympiqueLyonnais_url3,
+                                   OlympiqueLyonnais_url4, OlympiqueLyonnais_url5, OlympiqueLyonnais_url6,
+                                   OlympiqueLyonnais_url7, OlympiqueLyonnais_url8, OlympiqueLyonnais_url9,
+                                   OlympiqueLyonnais_url10, OlympiqueLyonnais_url11, OlympiqueLyonnais_url12,
+                                   OlympiqueLyonnais_url13, OlympiqueLyonnais_url14, OlympiqueLyonnais_url15) 
+
+# Keep only the unique observations
+OlympiqueLyonnais_url <- distinct(OlympiqueLyonnais_url) %>%
+  arrange(timestamp)
+
+# Convert data to .csv file
+write.csv(OlympiqueLyonnais_url, file = "OlympiqueLyonnais.csv", row.names = T)
+
+## CLEAN MANUALLY IN EXCEL
+
+```
+
+```{r OlympiqueLyonnais database, eval=FALSE}
+# Download clean data
+OlympiqueLyonnais <- read.csv("OlympiqueLyonnais.csv")
+
+```
+
+### Team: FC Bayern Frauen
+Subreddit: fcbayern
+
+```{r fcbayern API calls, eval=FALSE}
+# Download data
+fcbayern_url1 <- find_thread_urls(subreddit="fcbayern",
+                                   keywords = "frauen",
+                                   sort_by = "relevance",
+                                   period = "all")
+fcbayern_url2 <- find_thread_urls(subreddit="fcbayern",
+                                   keywords = "frauen",
+                                   sort_by = "comments",
+                                   period = "all") 
+fcbayern_url3 <- find_thread_urls(subreddit="fcbayern",
+                                   keywords = "frauen",
+                                   sort_by = "new",
+                                   period = "all") 
+fcbayern_url4 <- find_thread_urls(subreddit="fcbayern",
+                                   keywords = "frauen",
+                                   sort_by = "hot",
+                                   period = "all") 
+fcbayern_url5 <- find_thread_urls(subreddit="fcbayern",
+                                   keywords = "frauen",
+                                   sort_by = "top",
+                                   period = "all") 
+fcbayern_url6 <- find_thread_urls(subreddit="fcbayern",
+                                   keywords = "women",
+                                   sort_by = "relevance",
+                                   period = "all") 
+fcbayern_url7 <- find_thread_urls(subreddit="fcbayern",
+                                   keywords = "women",
+                                   sort_by = "comments",
+                                   period = "all") 
+fcbayern_url8 <- find_thread_urls(subreddit="fcbayern",
+                                   keywords = "women",
+                                   sort_by = "new",
+                                   period = "all") 
+fcbayern_url9 <- find_thread_urls(subreddit="fcbayern",
+                                   keywords = "women",
+                                   sort_by = "hot",
+                                   period = "all") 
+fcbayern_url10 <- find_thread_urls(subreddit="fcbayern",
+                                   keywords = "women",
+                                   sort_by = "top",
+                                   period = "all") 
+fcbayern_url11 <- find_thread_urls(subreddit="fcbayern",
+                                   keywords = "ladies",
+                                   sort_by = "relevance",
+                                   period = "all")
+fcbayern_url12 <- find_thread_urls(subreddit="fcbayern",
+                                   keywords = "ladies",
+                                   sort_by = "comments",
+                                   period = "all") 
+fcbayern_url13 <- find_thread_urls(subreddit="fcbayern",
+                                   keywords = "ladies",
+                                   sort_by = "new",
+                                   period = "all") 
+fcbayern_url14 <- find_thread_urls(subreddit="fcbayern",
+                                   keywords = "ladies",
+                                   sort_by = "hot",
+                                   period = "all") 
+fcbayern_url15 <- find_thread_urls(subreddit="fcbayern",
+                                   keywords = "ladies",
+                                   sort_by = "top",
+                                   period = "all")
+
+```
+
+```{r fcbayern cleansing, eval=FALSE}
+# Bind all the data frames together
+fcbayern_url <- bind_rows(fcbayern_url1, fcbayern_url2, fcbayern_url3,
+                                   fcbayern_url4, fcbayern_url5, fcbayern_url6,
+                                   fcbayern_url7, fcbayern_url8, fcbayern_url9,
+                                   fcbayern_url10, fcbayern_url11, fcbayern_url12,
+                                   fcbayern_url13, fcbayern_url14, fcbayern_url15) 
+
+# Keep only the unique observations
+fcbayern_url <- distinct(fcbayern_url) %>%
+  arrange(timestamp)
+
+# Convert data to .csv file
+write.csv(fcbayern_url, file = "fcbayern.csv", row.names = T)
+
+## CLEAN MANUALLY IN EXCEL
+
+```
+
+```{r fcbayern database, eval=FALSE}
+# Download clean data
+fcbayern <- read.csv("fcbayern.csv")
+
+```
+
+### Team: Real Madrid Femenino
+Subreddit: realmadrid
+
+```{r realmadrid API calls, eval=FALSE}
+# Download data
+realmadrid_url1 <- find_thread_urls(subreddit="realmadrid",
+                                   keywords = "femenino",
+                                   sort_by = "relevance",
+                                   period = "all")
+realmadrid_url2 <- find_thread_urls(subreddit="realmadrid",
+                                   keywords = "femenino",
+                                   sort_by = "comments",
+                                   period = "all") 
+realmadrid_url3 <- find_thread_urls(subreddit="realmadrid",
+                                   keywords = "femenino",
+                                   sort_by = "new",
+                                   period = "all") 
+realmadrid_url4 <- find_thread_urls(subreddit="realmadrid",
+                                   keywords = "femenino",
+                                   sort_by = "hot",
+                                   period = "all") 
+realmadrid_url5 <- find_thread_urls(subreddit="realmadrid",
+                                   keywords = "femenino",
+                                   sort_by = "top",
+                                   period = "all") 
+realmadrid_url6 <- find_thread_urls(subreddit="realmadrid",
+                                   keywords = "women",
+                                   sort_by = "relevance",
+                                   period = "all") 
+realmadrid_url7 <- find_thread_urls(subreddit="realmadrid",
+                                   keywords = "women",
+                                   sort_by = "comments",
+                                   period = "all") 
+realmadrid_url8 <- find_thread_urls(subreddit="realmadrid",
+                                   keywords = "women",
+                                   sort_by = "new",
+                                   period = "all") 
+realmadrid_url9 <- find_thread_urls(subreddit="realmadrid",
+                                   keywords = "women",
+                                   sort_by = "hot",
+                                   period = "all") 
+realmadrid_url10 <- find_thread_urls(subreddit="realmadrid",
+                                   keywords = "women",
+                                   sort_by = "top",
+                                   period = "all") 
+realmadrid_url11 <- find_thread_urls(subreddit="realmadrid",
+                                   keywords = "ladies",
+                                   sort_by = "relevance",
+                                   period = "all")
+realmadrid_url12 <- find_thread_urls(subreddit="realmadrid",
+                                   keywords = "ladies",
+                                   sort_by = "comments",
+                                   period = "all") 
+realmadrid_url13 <- find_thread_urls(subreddit="realmadrid",
+                                   keywords = "ladies",
+                                   sort_by = "new",
+                                   period = "all") 
+realmadrid_url14 <- find_thread_urls(subreddit="realmadrid",
+                                   keywords = "ladies",
+                                   sort_by = "hot",
+                                   period = "all") 
+realmadrid_url15 <- find_thread_urls(subreddit="realmadrid",
+                                   keywords = "ladies",
+                                   sort_by = "top",
+                                   period = "all")
+
+```
+
+```{r realmadrid cleansing, eval=FALSE}
+# Bind all the data frames together
+realmadrid_url <- bind_rows(realmadrid_url1, realmadrid_url2, realmadrid_url3,
+                                   realmadrid_url4, realmadrid_url5, realmadrid_url6,
+                                   realmadrid_url7, realmadrid_url8, realmadrid_url9,
+                                   realmadrid_url10, realmadrid_url11, realmadrid_url12,
+                                   realmadrid_url13, realmadrid_url14, realmadrid_url15) 
+
+# Keep only the unique observations
+realmadrid_url <- distinct(realmadrid_url) %>%
+  arrange(timestamp)
+
+# Convert data to .csv file
+write.csv(realmadrid_url, file = "realmadrid.csv", row.names = T)
+
+## CLEAN MANUALLY IN EXCEL
+
+```
+
+```{r realmadrid database, eval=FALSE}
+# Download clean data
+realmadrid <- read.csv("realmadrid.csv")
+
+```
+
+### Team: Juventus Women
+Subreddit: juve
+
+```{r juve API calls, eval=FALSE}
+# Download data
+juve_url1 <- find_thread_urls(subreddit="juve",
+                                   keywords = "femminile",
+                                   sort_by = "relevance",
+                                   period = "all")
+juve_url2 <- find_thread_urls(subreddit="juve",
+                                   keywords = "femminile",
+                                   sort_by = "comments",
+                                   period = "all") 
+juve_url3 <- find_thread_urls(subreddit="juve",
+                                   keywords = "femminile",
+                                   sort_by = "new",
+                                   period = "all") 
+juve_url4 <- find_thread_urls(subreddit="juve",
+                                   keywords = "femminile",
+                                   sort_by = "hot",
+                                   period = "all") 
+juve_url5 <- find_thread_urls(subreddit="juve",
+                                   keywords = "femminile",
+                                   sort_by = "top",
+                                   period = "all") 
+juve_url6 <- find_thread_urls(subreddit="juve",
+                                   keywords = "women",
+                                   sort_by = "relevance",
+                                   period = "all") 
+juve_url7 <- find_thread_urls(subreddit="juve",
+                                   keywords = "women",
+                                   sort_by = "comments",
+                                   period = "all") 
+juve_url8 <- find_thread_urls(subreddit="juve",
+                                   keywords = "women",
+                                   sort_by = "new",
+                                   period = "all") 
+juve_url9 <- find_thread_urls(subreddit="juve",
+                                   keywords = "women",
+                                   sort_by = "hot",
+                                   period = "all") 
+juve_url10 <- find_thread_urls(subreddit="juve",
+                                   keywords = "women",
+                                   sort_by = "top",
+                                   period = "all") 
+juve_url11 <- find_thread_urls(subreddit="juve",
+                                   keywords = "ladies",
+                                   sort_by = "relevance",
+                                   period = "all")
+juve_url12 <- find_thread_urls(subreddit="juve",
+                                   keywords = "ladies",
+                                   sort_by = "comments",
+                                   period = "all") 
+juve_url13 <- find_thread_urls(subreddit="juve",
+                                   keywords = "ladies",
+                                   sort_by = "new",
+                                   period = "all") 
+juve_url14 <- find_thread_urls(subreddit="juve",
+                                   keywords = "ladies",
+                                   sort_by = "hot",
+                                   period = "all") 
+juve_url15 <- find_thread_urls(subreddit="juve",
+                                   keywords = "ladies",
+                                   sort_by = "top",
+                                   period = "all")
+
+```
+
+```{r juve cleansing, eval=FALSE}
+# Bind all the data frames together
+juve_url <- bind_rows(juve_url1, juve_url2, juve_url3,
+                                   juve_url4, juve_url5, juve_url6,
+                                   juve_url7, juve_url8, juve_url9,
+                                   juve_url10, juve_url11, juve_url12,
+                                   juve_url13, juve_url14, juve_url15) 
+
+# Keep only the unique observations
+juve_url <- distinct(juve_url) %>%
+  arrange(timestamp)
+
+# Convert data to .csv file
+write.csv(juve_url, file = "juve.csv", row.names = T)
+
+## CLEAN MANUALLY IN EXCEL
+
+```
+
+```{r juve database, eval=FALSE}
+# Download clean data
+juve <- read.csv("juve.csv")
+
+```
+
+### Extract content
+
+```{r download content, eval=FALSE}
+# Download threads
+barca_data <- get_thread_content(barca$url)
+OlympiqueLyonnais_data <- get_thread_content(OlympiqueLyonnais$url)
+fcbayern_data <- get_thread_content(fcbayern$url)
+realmadrid_data <- get_thread_content(realmadrid$url)
+juve_data <- get_thread_content(juve$url)
+
+```
+
+```{r join threads & comments, eval=FALSE}
+# Join threads
+threads <- rbind(barca_data$threads, OlympiqueLyonnais_data$threads,
+                 fcbayern_data$threads, realmadrid_data$threads, juve_data$threads)
+
+# Join comments
+comments <- rbind(barca_data$comments, OlympiqueLyonnais_data$comments,
+                 fcbayern_data$comments, realmadrid_data$comments, juve_data$comments)
+
+```
+
+```{r join into one dataframe, eval=FALSE}
+threads <- threads %>%
+  rename(post_author = author) %>%
+  rename(post_date = date) %>%
+  rename(post_timestamp = timestamp) %>%
+  rename(post_title = title) %>%
+  rename(post_text = text) %>%
+  rename(post_score = score) %>%
+  rename(post_upvotes = upvotes) %>%
+  rename(post_downvotes = downvotes) %>%
+  rename(post_up_ratio = up_ratio) %>%
+  rename(post_awards = total_awards_received) %>%
+  rename(post_golds = golds) %>%
+  rename(post_cross_posts = cross_posts) %>%
+  rename(post_comments = comments)
+
+data_europe <- left_join(comments, threads, by = "url")
+
+```
+
+```{r save data as csv, eval=FALSE}
+write.csv(data_europe, file = "data_europe.csv", row.names = T)
+
+```
+
+```{r}
+data_europe <- read.csv("data_europe.csv")
+data <- read.csv("data_england.csv")
+
+data <- bind_rows(data, data_europe)
+
+write.csv(data, file = "data.csv", row.names = T)
+
+```
+

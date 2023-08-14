@@ -1,0 +1,1104 @@
+---
+title: "Data Collection 2.0"
+author: "Emilio Robleda"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Load libraries
+
+```{r Load Libraries, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(RedditExtractoR)
+
+```
+
+# Data Download of Submissions
+
+In this part we make use of Reddit's API to extract submissions regarding each club's women's team. We then filter out to keep only the unique observations and afterwards we further clean the data in Excel. After cleaning the data in Excel we return the data to R.
+
+### Team: Manchester United Women
+Subreddit: reddevils
+
+```{r reddevils API calls, eval=FALSE}
+# Download data
+reddevils_url_may1 <- find_thread_urls(subreddit="reddevils",
+                                   keywords = "muwomen",
+                                   sort_by = "relevance",
+                                   period = "all")
+reddevils_url_may2 <- find_thread_urls(subreddit="reddevils",
+                                   keywords = "muwomen",
+                                   sort_by = "comments",
+                                   period = "all") 
+reddevils_url_may3 <- find_thread_urls(subreddit="reddevils",
+                                   keywords = "muwomen",
+                                   sort_by = "new",
+                                   period = "all") 
+reddevils_url_may4 <- find_thread_urls(subreddit="reddevils",
+                                   keywords = "muwomen",
+                                   sort_by = "hot",
+                                   period = "all") 
+reddevils_url_may5 <- find_thread_urls(subreddit="reddevils",
+                                   keywords = "muwomen",
+                                   sort_by = "top",
+                                   period = "all") 
+reddevils_url_may6 <- find_thread_urls(subreddit="reddevils",
+                                   keywords = "women",
+                                   sort_by = "relevance",
+                                   period = "all") 
+reddevils_url_may7 <- find_thread_urls(subreddit="reddevils",
+                                   keywords = "women",
+                                   sort_by = "comments",
+                                   period = "all") 
+reddevils_url_may8 <- find_thread_urls(subreddit="reddevils",
+                                   keywords = "women",
+                                   sort_by = "new",
+                                   period = "all") 
+reddevils_url_may9 <- find_thread_urls(subreddit="reddevils",
+                                   keywords = "women",
+                                   sort_by = "hot",
+                                   period = "all") 
+reddevils_url_may10 <- find_thread_urls(subreddit="reddevils",
+                                   keywords = "women",
+                                   sort_by = "top",
+                                   period = "all") 
+reddevils_url_may11 <- find_thread_urls(subreddit="reddevils",
+                                   keywords = "ladies",
+                                   sort_by = "relevance",
+                                   period = "all")
+reddevils_url_may12 <- find_thread_urls(subreddit="reddevils",
+                                   keywords = "ladies",
+                                   sort_by = "comments",
+                                   period = "all") 
+reddevils_url_may13 <- find_thread_urls(subreddit="reddevils",
+                                   keywords = "ladies",
+                                   sort_by = "new",
+                                   period = "all") 
+reddevils_url_may14 <- find_thread_urls(subreddit="reddevils",
+                                   keywords = "ladies",
+                                   sort_by = "hot",
+                                   period = "all") 
+reddevils_url_may15 <- find_thread_urls(subreddit="reddevils",
+                                   keywords = "ladies",
+                                   sort_by = "top",
+                                   period = "all")
+reddevils_url_may16 <- find_thread_urls(subreddit="reddevils",
+                                   keywords = "wsl",
+                                   sort_by = "relevance",
+                                   period = "all")
+reddevils_url_may17 <- find_thread_urls(subreddit="reddevils",
+                                   keywords = "wsl",
+                                   sort_by = "comments",
+                                   period = "all") 
+reddevils_url_may18 <- find_thread_urls(subreddit="reddevils",
+                                   keywords = "wsl",
+                                   sort_by = "new",
+                                   period = "all") 
+reddevils_url_may19 <- find_thread_urls(subreddit="reddevils",
+                                   keywords = "wsl",
+                                   sort_by = "hot",
+                                   period = "all") 
+reddevils_url_may20 <- find_thread_urls(subreddit="reddevils",
+                                   keywords = "wsl",
+                                   sort_by = "top",
+                                   period = "all")
+
+```
+
+```{r reddevils cleansing, eval=FALSE}
+# Bind all the data frames together
+reddevils_url_may <- bind_rows(reddevils_url_may1, reddevils_url_may2, reddevils_url_may3, reddevils_url_may4, reddevils_url_may5, 
+                            reddevils_url_may6, reddevils_url_may7, reddevils_url_may8, reddevils_url_may9, reddevils_url_may10, 
+                            reddevils_url_may11, reddevils_url_may12, reddevils_url_may13, reddevils_url_may14, reddevils_url_may15,
+                           reddevils_url_may16, reddevils_url_may17, reddevils_url_may18, reddevils_url_may19, reddevils_url_may20) 
+
+# Keep only the unique observations
+reddevils_url_may <- distinct(reddevils_url_may) %>%
+  filter(date_utc >= as.Date("2023-05-01")) %>%
+  filter(date_utc <= as.Date("2023-05-31")) %>%
+  arrange(timestamp) 
+
+# Convert data to .csv file
+write.csv(reddevils_url_may, file = "reddevils_may.csv", row.names = T)
+
+## CLEAN MANUALLY IN EXCEL
+
+```
+
+```{r reddevils database, eval=FALSE}
+# Download clean data
+reddevils_may <- read.csv("reddevils_may.csv")
+
+```
+
+### Team: Chelsea Women
+Subreddit: chelseafc
+
+```{r chelseafc API calls, eval=FALSE}
+# Download data
+chelseafc_url_may1 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "wsl",
+                                   sort_by = "relevance",
+                                   period = "all")
+chelseafc_url_may2 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "wsl",
+                                   sort_by = "comments",
+                                   period = "all") 
+chelseafc_url_may3 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "wsl",
+                                   sort_by = "new",
+                                   period = "all") 
+chelseafc_url_may4 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "wsl",
+                                   sort_by = "hot",
+                                   period = "all") 
+chelseafc_url_may5 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "wsl",
+                                   sort_by = "top",
+                                   period = "all") 
+chelseafc_url_may6 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "women",
+                                   sort_by = "relevance",
+                                   period = "all") 
+chelseafc_url_may7 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "women",
+                                   sort_by = "comments",
+                                   period = "all") 
+chelseafc_url_may8 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "women",
+                                   sort_by = "new",
+                                   period = "all") 
+chelseafc_url_may9 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "women",
+                                   sort_by = "hot",
+                                   period = "all") 
+chelseafc_url_may10 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "women",
+                                   sort_by = "top",
+                                   period = "all") 
+chelseafc_url_may11 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "ladies",
+                                   sort_by = "relevance",
+                                   period = "all")
+chelseafc_url_may12 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "ladies",
+                                   sort_by = "comments",
+                                   period = "all") 
+chelseafc_url_may13 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "ladies",
+                                   sort_by = "new",
+                                   period = "all") 
+chelseafc_url_may14 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "ladies",
+                                   sort_by = "hot",
+                                   period = "all") 
+chelseafc_url_may15 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "ladies",
+                                   sort_by = "top",
+                                   period = "all") 
+chelseafc_url_may16 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "chelsea w",
+                                   sort_by = "relevance",
+                                   period = "all")
+chelseafc_url_may17 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "chelsea w",
+                                   sort_by = "comments",
+                                   period = "all") 
+chelseafc_url_may18 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "chelsea w",
+                                   sort_by = "new",
+                                   period = "all") 
+chelseafc_url_may19 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "chelsea w",
+                                   sort_by = "hot",
+                                   period = "all") 
+chelseafc_url_may20 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "chelsea w",
+                                   sort_by = "top",
+                                   period = "all") 
+chelseafc_url_may21 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "wcl",
+                                   sort_by = "relevance",
+                                   period = "all")
+chelseafc_url_may22 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "wcl",
+                                   sort_by = "comments",
+                                   period = "all") 
+chelseafc_url_may23 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "wcl",
+                                   sort_by = "new",
+                                   period = "all") 
+chelseafc_url_may24 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "wcl",
+                                   sort_by = "hot",
+                                   period = "all") 
+chelseafc_url_may25 <- find_thread_urls(subreddit="chelseafc",
+                                   keywords = "wcl",
+                                   sort_by = "top",
+                                   period = "all")
+
+```
+
+```{r chelseafc cleansing, eval=FALSE}
+# Bind all the data frames together
+chelseafc_url_may <- bind_rows(chelseafc_url_may1, chelseafc_url_may2, chelseafc_url_may3, chelseafc_url_may4, chelseafc_url_may5,
+                           chelseafc_url_may6, chelseafc_url_may7, chelseafc_url_may8, chelseafc_url_may9, chelseafc_url_may10,
+                           chelseafc_url_may11, chelseafc_url_may12, chelseafc_url_may13, chelseafc_url_may14, chelseafc_url_may15,
+                           chelseafc_url_may16, chelseafc_url_may17, chelseafc_url_may18, chelseafc_url_may19, chelseafc_url_may20,
+                           chelseafc_url_may21, chelseafc_url_may22, chelseafc_url_may23, chelseafc_url_may24, chelseafc_url_may25) 
+
+# Keep only the unique observations
+chelseafc_url_may <- distinct(chelseafc_url_may) %>%
+  filter(date_utc >= as.Date("2023-05-01")) %>%
+  filter(date_utc <= as.Date("2023-05-31")) %>%  
+  arrange(timestamp)
+
+# Convert data to .csv file
+write.csv(chelseafc_url_may, file = "chelseafc_may.csv", row.names = T)
+
+## CLEAN MANUALLY IN EXCEL
+
+```
+
+```{r chelseafc database, eval=FALSE}
+# Download clean data
+chelseafc_may <- read.csv("chelseafc_may.csv")
+
+```
+
+### Team: Manchester City Women
+Subreddit: MCFC
+
+```{r MCFC API calls, eval=FALSE}
+# Download data
+MCFC_url_may1 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "wsl",
+                                   sort_by = "relevance",
+                                   period = "all")
+MCFC_url_may2 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "wsl",
+                                   sort_by = "comments",
+                                   period = "all") 
+MCFC_url_may3 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "wsl",
+                                   sort_by = "new",
+                                   period = "all") 
+MCFC_url_may4 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "wsl",
+                                   sort_by = "hot",
+                                   period = "all") 
+MCFC_url_may5 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "wsl",
+                                   sort_by = "top",
+                                   period = "all") 
+MCFC_url_may6 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "women",
+                                   sort_by = "relevance",
+                                   period = "all") 
+MCFC_url_may7 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "women",
+                                   sort_by = "comments",
+                                   period = "all") 
+MCFC_url_may8 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "women",
+                                   sort_by = "new",
+                                   period = "all") 
+MCFC_url_may9 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "women",
+                                   sort_by = "hot",
+                                   period = "all") 
+MCFC_url_may10 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "women",
+                                   sort_by = "top",
+                                   period = "all") 
+MCFC_url_may11 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "ladies",
+                                   sort_by = "relevance",
+                                   period = "all")
+MCFC_url_may12 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "ladies",
+                                   sort_by = "comments",
+                                   period = "all") 
+MCFC_url_may13 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "ladies",
+                                   sort_by = "new",
+                                   period = "all") 
+MCFC_url_may14 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "ladies",
+                                   sort_by = "hot",
+                                   period = "all") 
+MCFC_url_may15 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "ladies",
+                                   sort_by = "top",
+                                   period = "all") 
+MCFC_url_may16 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "[city w]",
+                                   sort_by = "new",
+                                   period = "all") 
+MCFC_url_may17 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "mcwfc",
+                                   sort_by = "relevance",
+                                   period = "all")
+MCFC_url_may18 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "mcwfc",
+                                   sort_by = "comments",
+                                   period = "all") 
+MCFC_url_may19 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "mcwfc",
+                                   sort_by = "new",
+                                   period = "all") 
+MCFC_url_may20 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "mcwfc",
+                                   sort_by = "hot",
+                                   period = "all") 
+MCFC_url_may21 <- find_thread_urls(subreddit="MCFC",
+                                   keywords = "mcwfc",
+                                   sort_by = "top",
+                                   period = "all") 
+
+```
+
+```{r MCFC cleansing, eval=FALSE}
+# Bind all the data frames together
+MCFC_url_may <- bind_rows(MCFC_url_may1, MCFC_url_may2, MCFC_url_may3, MCFC_url_may4, MCFC_url_may5,
+                      MCFC_url_may6, MCFC_url_may7, MCFC_url_may8, MCFC_url_may9, MCFC_url_may10,
+                      MCFC_url_may11, MCFC_url_may12, MCFC_url_may13, MCFC_url_may14, MCFC_url_may15,
+                      MCFC_url_may16, MCFC_url_may17, MCFC_url_may18, MCFC_url_may19, MCFC_url_may20, MCFC_url_may21) 
+
+# Keep only the unique observations
+MCFC_url_may <- distinct(MCFC_url_may) %>%
+  filter(date_utc >= as.Date("2023-05-01")) %>%
+  filter(date_utc <= as.Date("2023-05-31")) %>%  
+  arrange(timestamp)
+
+# Convert data to .csv file
+write.csv(MCFC_url_may, file = "MCFC_may.csv", row.names = T)
+
+## CLEAN MANUALLY IN EXCEL
+
+```
+
+```{r MCFC database, eval=FALSE}
+# Download clean data
+MCFC_may <- read.csv("MCFC_may.csv")
+
+```
+
+### Team: Arsenal Women
+Subreddit: Gunners
+
+```{r Gunners API calls, eval=FALSE}
+# Download data
+Gunners_url_may1 <- find_thread_urls(subreddit="Gunners",
+                                   keywords = "wsl",
+                                   sort_by = "relevance",
+                                   period = "all")
+Gunners_url_may2 <- find_thread_urls(subreddit="Gunners",
+                                   keywords = "wsl",
+                                   sort_by = "comments",
+                                   period = "all") 
+Gunners_url_may3 <- find_thread_urls(subreddit="Gunners",
+                                   keywords = "wsl",
+                                   sort_by = "new",
+                                   period = "all") 
+Gunners_url_may4 <- find_thread_urls(subreddit="Gunners",
+                                   keywords = "wsl",
+                                   sort_by = "hot",
+                                   period = "all") 
+Gunners_url_may5 <- find_thread_urls(subreddit="Gunners",
+                                   keywords = "wsl",
+                                   sort_by = "top",
+                                   period = "all") 
+Gunners_url_may6 <- find_thread_urls(subreddit="Gunners",
+                                   keywords = "women",
+                                   sort_by = "relevance",
+                                   period = "all") 
+Gunners_url_may7 <- find_thread_urls(subreddit="Gunners",
+                                   keywords = "women",
+                                   sort_by = "comments",
+                                   period = "all") 
+Gunners_url_may8 <- find_thread_urls(subreddit="Gunners",
+                                   keywords = "women",
+                                   sort_by = "new",
+                                   period = "all") 
+Gunners_url_may9 <- find_thread_urls(subreddit="Gunners",
+                                   keywords = "women",
+                                   sort_by = "hot",
+                                   period = "all") 
+Gunners_url_may10 <- find_thread_urls(subreddit="Gunners",
+                                   keywords = "women",
+                                   sort_by = "top",
+                                   period = "all") 
+Gunners_url_may11 <- find_thread_urls(subreddit="Gunners",
+                                   keywords = "ladies",
+                                   sort_by = "relevance",
+                                   period = "all")
+Gunners_url_may12 <- find_thread_urls(subreddit="Gunners",
+                                   keywords = "ladies",
+                                   sort_by = "comments",
+                                   period = "all") 
+Gunners_url_may13 <- find_thread_urls(subreddit="Gunners",
+                                   keywords = "ladies",
+                                   sort_by = "new",
+                                   period = "all") 
+Gunners_url_may14 <- find_thread_urls(subreddit="Gunners",
+                                   keywords = "ladies",
+                                   sort_by = "hot",
+                                   period = "all") 
+Gunners_url_may15 <- find_thread_urls(subreddit="Gunners",
+                                   keywords = "ladies",
+                                   sort_by = "top",
+                                   period = "all") 
+Gunners_url_may16 <- find_thread_urls(subreddit="Gunners",
+                                   keywords = "[arsenal w]",
+                                   sort_by = "new",
+                                   period = "all") 
+Gunners_url_may17 <- find_thread_urls(subreddit="Gunners",
+                                   keywords = "awfc",
+                                   sort_by = "new",
+                                   period = "all")
+Gunners_url_may18 <- find_thread_urls(subreddit="Gunners",
+                                   keywords = "arsenal wfc",
+                                   sort_by = "new",
+                                   period = "all") 
+Gunners_url_may19 <- find_thread_urls(subreddit="Gunners",
+                                   keywords = "arsenalwfc",
+                                   sort_by = "new",
+                                   period = "all") 
+
+```
+
+```{r Gunners cleansing, eval=FALSE}
+# Bind all the data frames together
+Gunners_url_may <- bind_rows(Gunners_url_may1, Gunners_url_may2, Gunners_url_may3, Gunners_url_may4, Gunners_url_may5,
+                      Gunners_url_may6, Gunners_url_may7, Gunners_url_may8, Gunners_url_may9, Gunners_url_may10,
+                      Gunners_url_may11, Gunners_url_may12, Gunners_url_may13, Gunners_url_may14, Gunners_url_may15,
+                      Gunners_url_may16, Gunners_url_may17, Gunners_url_may18, Gunners_url_may19) 
+
+# Keep only the unique observations
+Gunners_url_may <- distinct(Gunners_url_may) %>%
+  filter(date_utc >= as.Date("2023-05-01")) %>%
+  filter(date_utc <= as.Date("2023-05-31")) %>%
+  arrange(timestamp)
+
+# Convert data to .csv file
+write.csv(Gunners_url_may, file = "Gunners_may.csv", row.names = T)
+
+## CLEAN MANUALLY IN EXCEL
+
+```
+
+```{r Gunners database, eval=FALSE}
+# Download clean data
+Gunners_may <- read.csv("Gunners_may.csv")
+
+```
+
+### Team: Aston Villa Women
+Subreddit: avfc
+
+```{r avfc API calls, eval=FALSE}
+# Download data
+avfc_url_may1 <- find_thread_urls(subreddit="avfc",
+                                   keywords = "wsl",
+                                   sort_by = "new",
+                                   period = "all") 
+avfc_url_may2 <- find_thread_urls(subreddit="avfc",
+                                   keywords = "women",
+                                   sort_by = "relevance",
+                                   period = "all") 
+avfc_url_may3 <- find_thread_urls(subreddit="avfc",
+                                   keywords = "women",
+                                   sort_by = "comments",
+                                   period = "all") 
+avfc_url_may4 <- find_thread_urls(subreddit="avfc",
+                                   keywords = "women",
+                                   sort_by = "new",
+                                   period = "all") 
+avfc_url_may5 <- find_thread_urls(subreddit="avfc",
+                                   keywords = "women",
+                                   sort_by = "hot",
+                                   period = "all") 
+avfc_url_may6 <- find_thread_urls(subreddit="avfc",
+                                   keywords = "women",
+                                   sort_by = "top",
+                                   period = "all") 
+avfc_url_may7 <- find_thread_urls(subreddit="avfc",
+                                   keywords = "ladies",
+                                   sort_by = "relevance",
+                                   period = "all")
+avfc_url_may8 <- find_thread_urls(subreddit="avfc",
+                                   keywords = "ladies",
+                                   sort_by = "comments",
+                                   period = "all") 
+avfc_url_may9 <- find_thread_urls(subreddit="avfc",
+                                   keywords = "ladies",
+                                   sort_by = "new",
+                                   period = "all") 
+avfc_url_may10 <- find_thread_urls(subreddit="avfc",
+                                   keywords = "ladies",
+                                   sort_by = "hot",
+                                   period = "all") 
+avfc_url_may11 <- find_thread_urls(subreddit="avfc",
+                                   keywords = "ladies",
+                                   sort_by = "top",
+                                   period = "all") 
+
+```
+
+```{r avfc cleansing, eval=FALSE}
+# Bind all the data frames together
+avfc_url_may <- bind_rows(avfc_url_may1, avfc_url_may2, avfc_url_may3, avfc_url_may4, avfc_url_may5,
+                      avfc_url_may6, avfc_url_may7, avfc_url_may8, avfc_url_may9, avfc_url_may10, avfc_url_may11) 
+
+# Keep only the unique observations
+avfc_url_may <- distinct(avfc_url_may) %>%
+  filter(date_utc >= as.Date("2023-05-01")) %>%
+  filter(date_utc <= as.Date("2023-05-31")) %>%
+  arrange(timestamp)
+
+# Convert data to .csv file
+write.csv(avfc_url_may, file = "avfc_may.csv", row.names = T)
+
+## CLEAN MANUALLY IN EXCEL
+
+```
+
+```{r avfc database, eval=FALSE}
+# Download clean data
+avfc_may <- read.csv("avfc_may.csv")
+
+```
+
+### Team: Everton Women
+Subreddit: Everton
+
+```{r Everton API calls, eval=FALSE}
+# Download data
+Everton_url_may1 <- find_thread_urls(subreddit="Everton",
+                                   keywords = "wsl",
+                                   sort_by = "new",
+                                   period = "all") 
+Everton_url_may2 <- find_thread_urls(subreddit="Everton",
+                                   keywords = "women",
+                                   sort_by = "relevance",
+                                   period = "all") 
+Everton_url_may3 <- find_thread_urls(subreddit="Everton",
+                                   keywords = "women",
+                                   sort_by = "comments",
+                                   period = "all") 
+Everton_url_may4 <- find_thread_urls(subreddit="Everton",
+                                   keywords = "women",
+                                   sort_by = "new",
+                                   period = "all") 
+Everton_url_may5 <- find_thread_urls(subreddit="Everton",
+                                   keywords = "women",
+                                   sort_by = "hot",
+                                   period = "all") 
+Everton_url_may6 <- find_thread_urls(subreddit="Everton",
+                                   keywords = "women",
+                                   sort_by = "top",
+                                   period = "all") 
+Everton_url_may7 <- find_thread_urls(subreddit="Everton",
+                                   keywords = "ladies",
+                                   sort_by = "relevance",
+                                   period = "all")
+Everton_url_may8 <- find_thread_urls(subreddit="Everton",
+                                   keywords = "ladies",
+                                   sort_by = "comments",
+                                   period = "all") 
+Everton_url_may9 <- find_thread_urls(subreddit="Everton",
+                                   keywords = "ladies",
+                                   sort_by = "new",
+                                   period = "all") 
+Everton_url_may10 <- find_thread_urls(subreddit="Everton",
+                                   keywords = "ladies",
+                                   sort_by = "hot",
+                                   period = "all") 
+Everton_url_may11 <- find_thread_urls(subreddit="Everton",
+                                   keywords = "ladies",
+                                   sort_by = "top",
+                                   period = "all") 
+
+```
+
+```{r Everton cleansing, eval=FALSE}
+# Bind all the data frames together
+Everton_url_may <- bind_rows(Everton_url_may1, Everton_url_may2, Everton_url_may3, Everton_url_may4, Everton_url_may5,
+                      Everton_url_may6, Everton_url_may7, Everton_url_may8, Everton_url_may9, Everton_url_may10, Everton_url_may11) 
+
+# Keep only the unique observations
+Everton_url_may <- distinct(Everton_url_may) %>%
+  filter(date_utc >= as.Date("2023-05-01")) %>%
+  filter(date_utc <= as.Date("2023-05-31")) %>%
+  arrange(timestamp)
+
+# Convert data to .csv file
+write.csv(Everton_url_may, file = "Everton_may.csv", row.names = T)
+
+## CLEAN MANUALLY IN EXCEL
+
+```
+
+```{r Everton database, eval=FALSE}
+# Download clean data
+Everton_may <- read.csv("Everton_may.csv")
+
+```
+
+### Team: West Ham Women
+Subreddit: Hammers
+
+```{r Hammers API calls, eval=FALSE}
+# Download data
+Hammers_url_may1 <- find_thread_urls(subreddit="Hammers",
+                                   keywords = "wsl",
+                                   sort_by = "relevance",
+                                   period = "all") 
+Hammers_url_may2 <- find_thread_urls(subreddit="Hammers",
+                                   keywords = "wsl",
+                                   sort_by = "comments",
+                                   period = "all") 
+Hammers_url_may3 <- find_thread_urls(subreddit="Hammers",
+                                   keywords = "wsl",
+                                   sort_by = "new",
+                                   period = "all") 
+Hammers_url_may4 <- find_thread_urls(subreddit="Hammers",
+                                   keywords = "wsl",
+                                   sort_by = "hot",
+                                   period = "all") 
+Hammers_url_may5 <- find_thread_urls(subreddit="Hammers",
+                                   keywords = "wsl",
+                                   sort_by = "top",
+                                   period = "all") 
+Hammers_url_may6 <- find_thread_urls(subreddit="Hammers",
+                                   keywords = "women",
+                                   sort_by = "relevance",
+                                   period = "all") 
+Hammers_url_may7 <- find_thread_urls(subreddit="Hammers",
+                                   keywords = "women",
+                                   sort_by = "comments",
+                                   period = "all") 
+Hammers_url_may8 <- find_thread_urls(subreddit="Hammers",
+                                   keywords = "women",
+                                   sort_by = "new",
+                                   period = "all") 
+Hammers_url_may9 <- find_thread_urls(subreddit="Hammers",
+                                   keywords = "women",
+                                   sort_by = "hot",
+                                   period = "all") 
+Hammers_url_may10 <- find_thread_urls(subreddit="Hammers",
+                                   keywords = "women",
+                                   sort_by = "top",
+                                   period = "all") 
+Hammers_url_may11 <- find_thread_urls(subreddit="Hammers",
+                                   keywords = "ladies",
+                                   sort_by = "relevance",
+                                   period = "all")
+Hammers_url_may12 <- find_thread_urls(subreddit="Hammers",
+                                   keywords = "ladies",
+                                   sort_by = "comments",
+                                   period = "all") 
+Hammers_url_may13 <- find_thread_urls(subreddit="Hammers",
+                                   keywords = "ladies",
+                                   sort_by = "new",
+                                   period = "all") 
+Hammers_url_may14 <- find_thread_urls(subreddit="Hammers",
+                                   keywords = "ladies",
+                                   sort_by = "hot",
+                                   period = "all") 
+Hammers_url_may15 <- find_thread_urls(subreddit="Hammers",
+                                   keywords = "ladies",
+                                   sort_by = "top",
+                                   period = "all") 
+
+```
+
+```{r Hammers cleansing, eval=FALSE}
+# Bind all the data frames together
+Hammers_url_may <- bind_rows(Hammers_url_may1, Hammers_url_may2, Hammers_url_may3, Hammers_url_may4,
+                             Hammers_url_may5, Hammers_url_may6, Hammers_url_may7, Hammers_url_may8,
+                             Hammers_url_may9, Hammers_url_may10, Hammers_url_may11, Hammers_url_may12,
+                             Hammers_url_may13, Hammers_url_may14, Hammers_url_may15) 
+
+# Keep only the unique observations
+Hammers_url_may <- distinct(Hammers_url_may) %>%
+  filter(date_utc >= as.Date("2023-05-01")) %>%
+  filter(date_utc <= as.Date("2023-05-31")) %>%
+  arrange(timestamp)
+
+# Convert data to .csv file
+write.csv(Hammers_url_may, file = "Hammers_may.csv", row.names = T)
+
+## CLEAN MANUALLY IN EXCEL
+
+```
+
+```{r Hammers database, eval=FALSE}
+# Download clean data
+Hammers_may <- read.csv("Hammers_may.csv")
+
+```
+
+### Team: Liverpool Women
+Subreddit: LiverpoolFC
+
+```{r LiverpoolFC API calls, eval=FALSE}
+# Download data
+LiverpoolFC_url_may1 <- find_thread_urls(subreddit="LiverpoolFC",
+                                   keywords = "wsl",
+                                   sort_by = "relevance",
+                                   period = "all") 
+LiverpoolFC_url_may2 <- find_thread_urls(subreddit="LiverpoolFC",
+                                   keywords = "wsl",
+                                   sort_by = "comments",
+                                   period = "all") 
+LiverpoolFC_url_may3 <- find_thread_urls(subreddit="LiverpoolFC",
+                                   keywords = "wsl",
+                                   sort_by = "new",
+                                   period = "all") 
+LiverpoolFC_url_may4 <- find_thread_urls(subreddit="LiverpoolFC",
+                                   keywords = "wsl",
+                                   sort_by = "hot",
+                                   period = "all") 
+LiverpoolFC_url_may5 <- find_thread_urls(subreddit="LiverpoolFC",
+                                   keywords = "wsl",
+                                   sort_by = "top",
+                                   period = "all") 
+LiverpoolFC_url_may6 <- find_thread_urls(subreddit="LiverpoolFC",
+                                   keywords = "women",
+                                   sort_by = "relevance",
+                                   period = "all") 
+LiverpoolFC_url_may7 <- find_thread_urls(subreddit="LiverpoolFC",
+                                   keywords = "women",
+                                   sort_by = "comments",
+                                   period = "all") 
+LiverpoolFC_url_may8 <- find_thread_urls(subreddit="LiverpoolFC",
+                                   keywords = "women",
+                                   sort_by = "new",
+                                   period = "all") 
+LiverpoolFC_url_may9 <- find_thread_urls(subreddit="LiverpoolFC",
+                                   keywords = "women",
+                                   sort_by = "hot",
+                                   period = "all") 
+LiverpoolFC_url_may10 <- find_thread_urls(subreddit="LiverpoolFC",
+                                   keywords = "women",
+                                   sort_by = "top",
+                                   period = "all") 
+LiverpoolFC_url_may11 <- find_thread_urls(subreddit="LiverpoolFC",
+                                   keywords = "ladies",
+                                   sort_by = "relevance",
+                                   period = "all")
+LiverpoolFC_url_may12 <- find_thread_urls(subreddit="LiverpoolFC",
+                                   keywords = "ladies",
+                                   sort_by = "comments",
+                                   period = "all") 
+LiverpoolFC_url_may13 <- find_thread_urls(subreddit="LiverpoolFC",
+                                   keywords = "ladies",
+                                   sort_by = "new",
+                                   period = "all") 
+LiverpoolFC_url_may14 <- find_thread_urls(subreddit="LiverpoolFC",
+                                   keywords = "ladies",
+                                   sort_by = "hot",
+                                   period = "all") 
+LiverpoolFC_url_may15 <- find_thread_urls(subreddit="LiverpoolFC",
+                                   keywords = "ladies",
+                                   sort_by = "top",
+                                   period = "all") 
+
+```
+
+```{r LiverpoolFC cleansing, eval=FALSE}
+# Bind all the data frames together
+LiverpoolFC_url_may <- bind_rows(LiverpoolFC_url_may1, LiverpoolFC_url_may2, LiverpoolFC_url_may3, LiverpoolFC_url_may4,
+                             LiverpoolFC_url_may5, LiverpoolFC_url_may6, LiverpoolFC_url_may7, LiverpoolFC_url_may8,
+                             LiverpoolFC_url_may9, LiverpoolFC_url_may10, LiverpoolFC_url_may11, LiverpoolFC_url_may12,
+                             LiverpoolFC_url_may13, LiverpoolFC_url_may14, LiverpoolFC_url_may15) 
+
+# Keep only the unique observations
+LiverpoolFC_url_may <- distinct(LiverpoolFC_url_may) %>%
+  filter(date_utc >= as.Date("2023-05-01")) %>%
+  filter(date_utc <= as.Date("2023-05-31")) %>%
+  arrange(timestamp)
+
+# Convert data to .csv file
+write.csv(LiverpoolFC_url_may, file = "LiverpoolFC_may.csv", row.names = T)
+
+## CLEAN MANUALLY IN EXCEL
+
+```
+
+```{r LiverpoolFC database, eval=FALSE}
+# Download clean data
+LiverpoolFC_may <- read.csv("LiverpoolFC_may.csv")
+
+```
+
+### Team: Brighton and Hove Albion Women
+Subreddit: BrightonHoveAlbion
+
+**There were no posts regarding Brighton Hove Albion Women during May 2023**
+
+### Team: Tottenham Hotspur Women
+Subreddit: coys
+
+```{r coys API calls, eval=FALSE}
+# Download data
+coys_url_may1 <- find_thread_urls(subreddit="coys",
+                                   keywords = "wsl",
+                                   sort_by = "relevance",
+                                   period = "all") 
+coys_url_may2 <- find_thread_urls(subreddit="coys",
+                                   keywords = "wsl",
+                                   sort_by = "comments",
+                                   period = "all") 
+coys_url_may3 <- find_thread_urls(subreddit="coys",
+                                   keywords = "wsl",
+                                   sort_by = "new",
+                                   period = "all") 
+coys_url_may4 <- find_thread_urls(subreddit="coys",
+                                   keywords = "wsl",
+                                   sort_by = "hot",
+                                   period = "all") 
+coys_url_may5 <- find_thread_urls(subreddit="coys",
+                                   keywords = "wsl",
+                                   sort_by = "top",
+                                   period = "all") 
+coys_url_may6 <- find_thread_urls(subreddit="coys",
+                                   keywords = "women",
+                                   sort_by = "relevance",
+                                   period = "all") 
+coys_url_may7 <- find_thread_urls(subreddit="coys",
+                                   keywords = "women",
+                                   sort_by = "comments",
+                                   period = "all") 
+coys_url_may8 <- find_thread_urls(subreddit="coys",
+                                   keywords = "women",
+                                   sort_by = "new",
+                                   period = "all") 
+coys_url_may9 <- find_thread_urls(subreddit="coys",
+                                   keywords = "women",
+                                   sort_by = "hot",
+                                   period = "all") 
+coys_url_may10 <- find_thread_urls(subreddit="coys",
+                                   keywords = "women",
+                                   sort_by = "top",
+                                   period = "all") 
+coys_url_may11 <- find_thread_urls(subreddit="coys",
+                                   keywords = "ladies",
+                                   sort_by = "relevance",
+                                   period = "all")
+coys_url_may12 <- find_thread_urls(subreddit="coys",
+                                   keywords = "ladies",
+                                   sort_by = "comments",
+                                   period = "all") 
+coys_url_may13 <- find_thread_urls(subreddit="coys",
+                                   keywords = "ladies",
+                                   sort_by = "new",
+                                   period = "all") 
+coys_url_may14 <- find_thread_urls(subreddit="coys",
+                                   keywords = "ladies",
+                                   sort_by = "hot",
+                                   period = "all") 
+coys_url_may15 <- find_thread_urls(subreddit="coys",
+                                   keywords = "ladies",
+                                   sort_by = "top",
+                                   period = "all") 
+
+```
+
+```{r coys cleansing, eval=FALSE}
+# Bind all the data frames together
+coys_url_may <- bind_rows(coys_url_may1, coys_url_may2, coys_url_may3, coys_url_may4, coys_url_may5, coys_url_may6, coys_url_may7, coys_url_may8,
+                      coys_url_may9, coys_url_may10, coys_url_may11, coys_url_may12, coys_url_may13, coys_url_may14, coys_url_may15) 
+
+# Keep only the unique observations
+coys_url_may <- distinct(coys_url_may) %>%
+  filter(date_utc >= as.Date("2023-05-01")) %>%
+  filter(date_utc <= as.Date("2023-05-31")) %>%
+  arrange(timestamp)
+
+# Convert data to .csv file
+write.csv(coys_url_may, file = "coys_may.csv", row.names = T)
+
+## CLEAN MANUALLY IN EXCEL
+
+```
+
+```{r coys database, eval=FALSE}
+# Download clean data
+coys_may <- read.csv("coys_may.csv")
+
+```
+
+### Team: Leicester City Women
+Subreddit: lcfc
+
+```{r lcfc API calls, eval=FALSE}
+# Download data
+lcfc_url_may1 <- find_thread_urls(subreddit="lcfc",
+                                   keywords = "wsl",
+                                   sort_by = "relevance",
+                                   period = "all") 
+lcfc_url_may2 <- find_thread_urls(subreddit="lcfc",
+                                   keywords = "wsl",
+                                   sort_by = "comments",
+                                   period = "all") 
+lcfc_url_may3 <- find_thread_urls(subreddit="lcfc",
+                                   keywords = "wsl",
+                                   sort_by = "new",
+                                   period = "all") 
+lcfc_url_may4 <- find_thread_urls(subreddit="lcfc",
+                                   keywords = "wsl",
+                                   sort_by = "hot",
+                                   period = "all") 
+lcfc_url_may5 <- find_thread_urls(subreddit="lcfc",
+                                   keywords = "wsl",
+                                   sort_by = "top",
+                                   period = "all") 
+lcfc_url_may6 <- find_thread_urls(subreddit="lcfc",
+                                   keywords = "women",
+                                   sort_by = "relevance",
+                                   period = "all") 
+lcfc_url_may7 <- find_thread_urls(subreddit="lcfc",
+                                   keywords = "women",
+                                   sort_by = "comments",
+                                   period = "all") 
+lcfc_url_may8 <- find_thread_urls(subreddit="lcfc",
+                                   keywords = "women",
+                                   sort_by = "new",
+                                   period = "all") 
+lcfc_url_may9 <- find_thread_urls(subreddit="lcfc",
+                                   keywords = "women",
+                                   sort_by = "hot",
+                                   period = "all") 
+lcfc_url_may10 <- find_thread_urls(subreddit="lcfc",
+                                   keywords = "women",
+                                   sort_by = "top",
+                                   period = "all") 
+lcfc_url_may11 <- find_thread_urls(subreddit="lcfc",
+                                   keywords = "ladies",
+                                   sort_by = "relevance",
+                                   period = "all")
+lcfc_url_may12 <- find_thread_urls(subreddit="lcfc",
+                                   keywords = "ladies",
+                                   sort_by = "comments",
+                                   period = "all") 
+lcfc_url_may13 <- find_thread_urls(subreddit="lcfc",
+                                   keywords = "ladies",
+                                   sort_by = "new",
+                                   period = "all") 
+lcfc_url_may14 <- find_thread_urls(subreddit="lcfc",
+                                   keywords = "ladies",
+                                   sort_by = "hot",
+                                   period = "all") 
+lcfc_url_may15 <- find_thread_urls(subreddit="lcfc",
+                                   keywords = "ladies",
+                                   sort_by = "top",
+                                   period = "all") 
+
+```
+
+```{r lcfc cleansing, eval=FALSE}
+# Bind all the data frames together
+lcfc_url_may <- bind_rows(lcfc_url_may1, lcfc_url_may2, lcfc_url_may3, lcfc_url_may4, lcfc_url_may5, lcfc_url_may6, lcfc_url_may7, lcfc_url_may8,
+                      lcfc_url_may9, lcfc_url_may10, lcfc_url_may11, lcfc_url_may12, lcfc_url_may13, lcfc_url_may14, lcfc_url_may15) 
+
+# Keep only the unique observations
+lcfc_url_may <- distinct(lcfc_url_may) %>%
+  filter(date_utc >= as.Date("2023-05-01")) %>%
+  filter(date_utc <= as.Date("2023-05-31")) %>%
+  arrange(timestamp)
+
+# Convert data to .csv file
+write.csv(lcfc_url_may, file = "lcfc_may.csv", row.names = T)
+
+## CLEAN MANUALLY IN EXCEL
+
+```
+
+```{r lcfc database, eval=FALSE}
+# Download clean data
+lcfc_may <- read.csv("lcfc_may.csv")
+
+```
+
+### Team: Reading Women
+Subreddit: Urz
+
+**There were no posts regarding Reading Women during May 2023**
+
+### Extract content
+
+```{r download content, eval=FALSE}
+# Download threads
+avfc_may_data <- get_thread_content(avfc_may$url)
+Hammers_may_data <- get_thread_content(Hammers_may$url)
+Everton_may_data <- get_thread_content(Everton_may$url)
+lcfc_may_data <- get_thread_content(lcfc_may$url)
+MCFC_may_data <- get_thread_content(MCFC_may$url)
+LiverpoolFC_may_data <- get_thread_content(LiverpoolFC_may$url)
+coys_may_data <- get_thread_content(coys_may$url)
+chelseafc_may_data <- get_thread_content(chelseafc_may$url)
+reddevils_may_data <- get_thread_content(reddevils_may$url)
+Gunners_may_data <- get_thread_content(Gunners_may$url)
+
+```
+
+```{r join threads & comments, eval=FALSE}
+# Join threads
+threads_may <- rbind(avfc_may_data$threads,
+                 Hammers_may_data$threads, Everton_may_data$threads, lcfc_may_data$threads,
+                 MCFC_may_data$threads, LiverpoolFC_may_data$threads, coys_may_data$threads,
+                 chelseafc_may_data$threads, reddevils_may_data$threads, Gunners_may_data$threads)
+
+# Join comments
+comments_may <- rbind(avfc_may_data$comments,
+                 Hammers_may_data$comments, Everton_may_data$comments, lcfc_may_data$comments,
+                 MCFC_may_data$comments, LiverpoolFC_may_data$comments, coys_may_data$comments,
+                 chelseafc_may_data$comments, reddevils_may_data$comments, Gunners_may_data$comments)
+
+```
+
+```{r join into one dataframe, eval=FALSE}
+threads_may <- threads_may %>%
+  rename(post_author = author) %>%
+  rename(post_date = date) %>%
+  rename(post_timestamp = timestamp) %>%
+  rename(post_title = title) %>%
+  rename(post_text = text) %>%
+  rename(post_score = score) %>%
+  rename(post_upvotes = upvotes) %>%
+  rename(post_downvotes = downvotes) %>%
+  rename(post_up_ratio = up_ratio) %>%
+  rename(post_awards = total_awards_received) %>%
+  rename(post_golds = golds) %>%
+  rename(post_cross_posts = cross_posts) %>%
+  rename(post_comments = comments)
+
+data_may <- left_join(comments_may, threads_may, by = "url")
+
+```
+
+```{r save data as csv, eval=FALSE}
+write.csv(data_may, file = "data_may.csv", row.names = T)
+
+```
+
+```{r lcfc database, eval=FALSE}
+# Download clean data
+data_may <- read.csv("data_may.csv")
+data <- read.csv("data_without_may.csv")
+
+```
+
+```{r}
+# Extend data with data_may and keep only unique observations
+data <- bind_rows(data, data_may) %>%
+  distinct()
+
+# Convert data to .csv file
+write.csv(data, file = "data_england.csv", row.names = TRUE)
+
+```
+
